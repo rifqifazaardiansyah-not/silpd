@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,8 +10,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-<?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\PanenController;
@@ -35,7 +31,6 @@ use App\Http\Controllers\Petani\DashboardController as PetaniDashboardController
 use App\Http\Controllers\Petani\StokController as PetaniStokController;
 use App\Http\Controllers\Petani\PermintaanController as PetaniPermintaanController;
 use Illuminate\Support\Facades\Route;
-
 // Halaman Awal
 Route::get('/', function () {
     return view('welcome');
