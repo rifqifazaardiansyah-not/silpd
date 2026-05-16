@@ -49,8 +49,8 @@
 | **Penentuan Slot Otomatis** | ✅ | `TentukanSlotService::tentukanMultipleSlot()` via InstruksiPenyimpanan |
 | **Filter & Pencarian Panen** | ✅ | PanenController - filter by petani/kelompok/tanggal |
 | **Riwayat Panen per Petani** | ✅ | PanenController::index() - Petani relation |
-| **Edit/Update Panen** | ❌ | Not required (historical record - create only) |
-| **Hapus Panen** | ❌ | Not implemented (historical record) |
+| **Edit/Update Panen** | ✅ | PanenController::edit() & update() - Edit tanggal & detail, regenerate instruksi |
+| **Hapus Panen** | ✅ | PanenController::destroy() - Delete dengan cascade ke detail & instruksi pending |
 
 ---
 

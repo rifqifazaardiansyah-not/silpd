@@ -330,6 +330,190 @@ class PanenController extends Controller
     }
 
     /**
+     * Form edit data panen.
+     *
+     * Hanya bisa diedit jika:
+     * - Belum ada gabah yang masuk ke penyimpanan (status penyimpanan belum ada)
+     * - Semua instruksi masih pending (belum dikonfirmasi pengelola)
+     *
+     * Yang boleh diedit:
+     * - Tanggal panen
+     * - Detail panen (jumlah per jenis gabah)
+     * - Instruksi akan di-generate ulang berdasarkan data baru
+     */
+    public function edit(int $id)
+    {
+        $panen = Panen::with([
+            'petani',
+            'detailPanen.jenisGabah',
+            'detailPanen.instruksiPenyimpanan',
+            'detailPanen.penyimpananGabah',
+        ])->findOrFail($id);
+
+        // Cek apakah boleh diedit
+        $adaInstruksiSelesai = $panen->detailPanen->flatMap->instruksiPenyimpanan
+            ->where('status', 'selesai')
+            ->isNotEmpty();
+
+        if ($adaInstruksiSelesai) {
+            return redirect()
+                ->route('admin.panen.show', $id)
+                ->withErrors([
+                    'edit' => 'Data panen tidak dapat diedit karena sebagian instruksi penyimpanan sudah dikonfirmasi oleh pengelola.',
+                ]);
+        }
+
+        $adaPenyimpanan = $panen->detailPanen->flatMap->penyimpananGabah->isNotEmpty();
+
+        if ($adaPenyimpanan) {
+            return redirect()
+                ->route('admin.panen.show', $id)
+                ->withErrors([
+                    'edit' => 'Data panen tidak dapat diedit karena gabah sudah masuk ke slot penyimpanan.',
+                ]);
+        }
+
+        $petaniList     = Petani::with('kelompokTani')->orderBy('nama_petani')->get();
+        $jenisGabahList = JenisGabah::orderBy('nama_jenis')->get();
+        $persenLumbung  = config('silpd.persen_lumbung', 3);
+
+        return view('admin.panen.edit', compact(
+            'panen',
+            'petaniList',
+            'jenisGabahList',
+            'persenLumbung',
+        ));
+    }
+
+    /**
+     * Simpan perubahan data panen.
+     *
+     * Alur:
+     * 1. Validasi input baru
+     * 2. Hapus instruksi lama yang masih pending
+     * 3. Update header panen & detail panen
+     * 4. Generate instruksi penyimpanan baru berdasarkan detail yang di-update
+     * 5. Kumpulkan peringatan jika ada detail yang tidak dapat slot
+     */
+    public function update(Request $request, int $id)
+    {
+        $panen = Panen::with([
+            'detailPanen.instruksiPenyimpanan',
+            'detailPanen.penyimpananGabah',
+        ])->findOrFail($id);
+
+        // Cek apakah boleh diedit (validasi ulang)
+        $adaInstruksiSelesai = $panen->detailPanen->flatMap->instruksiPenyimpanan
+            ->where('status', 'selesai')
+            ->isNotEmpty();
+
+        if ($adaInstruksiSelesai) {
+            return back()->withErrors([
+                'edit' => 'Data panen tidak dapat diedit karena sebagian instruksi penyimpanan sudah dikonfirmasi oleh pengelola.',
+            ]);
+        }
+
+        $adaPenyimpanan = $panen->detailPanen->flatMap->penyimpananGabah->isNotEmpty();
+
+        if ($adaPenyimpanan) {
+            return back()->withErrors([
+                'edit' => 'Data panen tidak dapat diedit karena gabah sudah masuk ke slot penyimpanan.',
+            ]);
+        }
+
+        $request->validate([
+            'id_petani'                    => ['required', 'exists:petani,id_petani'],
+            'tanggal_panen'                => ['required', 'date', 'before_or_equal:today'],
+            'detail'                       => ['required', 'array', 'min:1'],
+            'detail.*.id_jenis_gabah'      => ['required', 'exists:jenis_gabah,id_jenis_gabah'],
+            'detail.*.jumlah_panen'        => ['required', 'numeric', 'min:1'],
+        ], [
+            'id_petani.required'                => 'Petani wajib dipilih.',
+            'id_petani.exists'                  => 'Petani tidak ditemukan.',
+            'tanggal_panen.required'            => 'Tanggal panen wajib diisi.',
+            'tanggal_panen.before_or_equal'     => 'Tanggal panen tidak boleh melewati hari ini.',
+            'detail.required'                   => 'Minimal satu jenis gabah wajib diisi.',
+            'detail.*.id_jenis_gabah.required'  => 'Jenis gabah wajib dipilih.',
+            'detail.*.id_jenis_gabah.exists'    => 'Jenis gabah tidak ditemukan.',
+            'detail.*.jumlah_panen.required'    => 'Jumlah panen wajib diisi.',
+            'detail.*.jumlah_panen.min'         => 'Jumlah panen minimal 1 kg.',
+        ]);
+
+        // Cegah duplikasi jenis gabah
+        $idJenisGabahList = array_column($request->detail, 'id_jenis_gabah');
+        if (count($idJenisGabahList) !== count(array_unique($idJenisGabahList))) {
+            return back()->withInput()->withErrors([
+                'detail' => 'Jenis gabah tidak boleh duplikat dalam satu data panen.',
+            ]);
+        }
+
+        $persenLumbung = config('silpd.persen_lumbung', 3);
+        $peringatanSlot = [];
+
+        DB::transaction(function () use ($request, $panen, $persenLumbung, &$peringatanSlot) {
+
+            // 1. Update header panen
+            $panen->update([
+                'id_petani'     => $request->id_petani,
+                'tanggal_panen' => $request->tanggal_panen,
+            ]);
+
+            // 2. Hapus detail lama dan instruksi pending-nya
+            foreach ($panen->detailPanen as $detail) {
+                // Hapus instruksi yang pending
+                $detail->instruksiPenyimpanan()
+                    ->where('status', 'pending')
+                    ->delete();
+                // Hapus detail
+                $detail->delete();
+            }
+
+            // 3. Buat detail baru
+            foreach ($request->detail as $item) {
+                $jumlahPanen   = (float) $item['jumlah_panen'];
+                $jumlahLumbung = round($jumlahPanen * ($persenLumbung / 100), 2);
+
+                $detailPanen = DetailPanen::create([
+                    'id_panen'       => $panen->id_panen,
+                    'id_jenis_gabah' => $item['id_jenis_gabah'],
+                    'jumlah_panen'   => $jumlahPanen,
+                ]);
+
+                // 4. Generate instruksi baru
+                if ($jumlahLumbung > 0) {
+                    $slot = $this->cariSlotYangSesuai($jumlahLumbung);
+
+                    if ($slot) {
+                        InstruksiPenyimpanan::create([
+                            'id_detail'         => $detailPanen->id_detail,
+                            'id_slot'           => $slot->id_slot,
+                            'jumlah'            => $jumlahLumbung,
+                            'tanggal_instruksi' => Carbon::today(),
+                            'status'            => 'pending',
+                        ]);
+                    } else {
+                        $namaJenis = JenisGabah::find($item['id_jenis_gabah'])?->nama_jenis ?? 'Tidak diketahui';
+                        $peringatanSlot[] = "Gabah {$namaJenis} ({$jumlahLumbung} kg): tidak ada slot dengan kapasitas mencukupi.";
+                    }
+                }
+            }
+        });
+
+        $successMsg = 'Data panen berhasil diperbarui. Instruksi penyimpanan telah di-generate ulang.';
+
+        if (! empty($peringatanSlot)) {
+            return redirect()
+                ->route('admin.panen.show', $id)
+                ->with('success', $successMsg)
+                ->with('warning_list', $peringatanSlot);
+        }
+
+        return redirect()
+            ->route('admin.panen.show', $id)
+            ->with('success', $successMsg);
+    }
+
+    /**
      * Batalkan instruksi penyimpanan yang masih pending.
      *
      * Instruksi yang sudah dikonfirmasi pengelola (status: selesai)

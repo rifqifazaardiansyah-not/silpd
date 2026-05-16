@@ -56,6 +56,8 @@ Route::middleware(['ensure_login', 'role:admin'])->prefix('admin')->name('admin.
         'create' => 'panen.create',
         'store' => 'panen.store',
         'show' => 'panen.show',
+        'edit' => 'panen.edit',
+        'update' => 'panen.update',
         'destroy' => 'panen.destroy',
     ]);
     Route::get('panen/{id}/form-instruksi-manual/{idDetail}', [PanenController::class, 'formInstruksiManual'])->name('panen.form-instruksi');
