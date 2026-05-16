@@ -38,7 +38,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'login_table',
         ],
     ],
 
@@ -64,6 +64,13 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
+
+        // Custom provider untuk tabel Login SILPD
+        'login_table' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Login::class,
+        ],
+    ],
 
         // 'users' => [
         //     'driver' => 'database',

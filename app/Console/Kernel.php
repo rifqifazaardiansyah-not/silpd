@@ -12,7 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Cek gabah kadaluarsa setiap hari jam 2 pagi
+        $schedule->command('check:expired-grain')
+                 ->dailyAt('02:00')
+                 ->description('Cek gabah yang sudah kadaluarsa dan trigger notifikasi');
     }
 
     /**

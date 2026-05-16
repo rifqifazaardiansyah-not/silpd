@@ -39,7 +39,9 @@ Route::get('/', function () {
 });
 
 // ===== LOGIN & LOGOUT =====
-Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])
+    ->middleware('guest')
+    ->name('login');
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 

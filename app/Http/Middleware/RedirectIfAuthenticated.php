@@ -2,29 +2,46 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class RedirectIfAuthenticated
 {
     /**
-     * Handle an incoming request.
+     * Middleware untuk redirect user yang sudah login agar tidak bisa akses halaman login.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * Cara kerja:
+     * 1. Cek apakah user sudah login (session login_id)
+     * 2. Jika sudah login → redirect ke dashboard sesuai role
+     * 3. Jika belum login → lanjutkan ke halaman login (tampilkan form login)
+     *
+     * Penggunaan di routes:
+     *   Route::get('/login', [LoginController::class, 'showLoginForm'])
+     *        ->middleware('guest')  // atau middleware custom ini
+     *        ->name('login');
+     *
+     * Tujuan: Mencegah user yang sudah login membuka halaman login lagi.
      */
-    public function handle(Request $request, Closure $next, string ...$guards): Response
+    public function handle(Request $request, Closure $next): Response
     {
-        $guards = empty($guards) ? [null] : $guards;
+        // Cek apakah sudah login (cek session dari LoginController)
+        if (session()->has('login_id') && session()->has('role')) {
+            $userRole = session('role');
 
-        foreach ($guards as $guard) {
-            if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
-            }
+            // Redirect ke dashboard sesuai role
+            $dashboardRoutes = [
+                'admin' => 'admin.dashboard',
+                'pengelola' => 'pengelola.dashboard',
+                'petani' => 'petani.dashboard',
+            ];
+
+            $redirectRoute = $dashboardRoutes[$userRole] ?? 'login';
+
+            return redirect()->route($redirectRoute);
         }
 
+        // Jika belum login, lanjutkan ke halaman login
         return $next($request);
     }
 }
