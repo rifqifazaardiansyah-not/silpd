@@ -39,9 +39,9 @@ Route::get('/', function () {
 });
 
 // ===== LOGIN & LOGOUT =====
-Route::get('/login', [\App\Http\Controllers\LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [\App\Http\Controllers\LoginController::class, 'login'])->name('login.post');
-Route::post('/logout', [\App\Http\Controllers\LoginController::class, 'logout'])->name('logout');
+Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login.post');
+Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
 // ===== ADMIN ROUTES =====
 Route::middleware(['ensure_login', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
