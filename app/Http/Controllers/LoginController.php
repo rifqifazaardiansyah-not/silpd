@@ -35,27 +35,32 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'username' => 'required|string',
             'password' => 'required',
         ]);
 
-        $email = $request->email;
+        $input = $request->username;  // Bisa email atau username
         $password = $request->password;
 
-        // Cek Login tabel Admin
-        $login = Login::where('email', $email)->first();
+        // Cek di tabel Login - cari berdasarkan username (bisa email atau username biasa)
+        $login = Login::where('username', $input)->first();
 
         if (!$login) {
-            return back()->with('error', 'Email atau password salah');
+            return back()->with('error', 'Username/Email atau password salah');
         }
 
         if (!Hash::check($password, $login->password)) {
-            return back()->with('error', 'Email atau password salah');
+            return back()->with('error', 'Username/Email atau password salah');
         }
 
-        // Tentukan role berdasarkan ref_model
-        $role = strtolower($login->ref_model);
-        $refId = $login->ref_id;
+        // Tentukan role dari enum role
+        $role = strtolower($login->role);
+        $refId = match($role) {
+            'petani' => $login->id_petani,
+            'pengelola' => $login->id_pengelola,
+            'admin' => $login->id_admin,
+            default => null,
+        };
 
         // Verifikasi user masih aktif di tabel masing-masing
         $user = match ($role) {
@@ -73,8 +78,8 @@ class LoginController extends Controller
         session([
             'role' => $role,
             'ref_id' => $refId,
-            'name' => $user->nama ?? $user->name ?? $email,
-            'email' => $email,
+            'name' => $user->nama_petani ?? $user->nama_pengelola ?? $user->nama_admin ?? $input,
+            'username' => $input,
         ]);
 
         // Redirect ke dashboard sesuai role
