@@ -148,7 +148,10 @@ return [
         'level' => 'debug',
         'log_path' => storage_path('logs/silpd.log'),
     ],
-]
+
+    // ===== REKOMENDASI PENGAMBILAN GABAH =====
+    'rekomendasi_pengambilan' => [
+        'prioritas_fifo' => [
             1 => 'Gabah paling lama disimpan (First In)',
             2 => 'Jenis gabah yang diminta petani',
             3 => 'Slot dengan stok mencukupi',
