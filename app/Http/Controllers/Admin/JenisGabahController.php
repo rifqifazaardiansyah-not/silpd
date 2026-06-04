@@ -22,17 +22,27 @@ class JenisGabahController extends Controller
 
         $jenisGabahList = $query->orderBy('nama_jenis')->paginate(15);
 
-        // Hitung stok tersimpan untuk setiap jenis gabah
+        // Hitung stok tersimpan dan pending untuk setiap jenis gabah
         $stokPerJenis = [];
+        $pendingPerJenis = [];
+        
         foreach ($jenisGabahList as $jenis) {
-            $stokPerJenis[$jenis->id_jenis_gabah] = PenyimpananGabah::whereHas('detailPanen', function ($q) use ($jenis) {
+            // Stok tersimpan
+            $stokPerJenis[$jenis->id_jenis_gabah] = (float) PenyimpananGabah::whereHas('detailPanen', function ($q) use ($jenis) {
                     $q->where('id_jenis_gabah', $jenis->id_jenis_gabah);
                 })
                 ->where('status', 'tersimpan')
                 ->sum('jumlah');
+            
+            // Instruksi pending
+            $pendingPerJenis[$jenis->id_jenis_gabah] = (float) \App\Models\InstruksiPenyimpanan::whereHas('detailPanen', function ($q) use ($jenis) {
+                    $q->where('id_jenis_gabah', $jenis->id_jenis_gabah);
+                })
+                ->where('status', 'pending')
+                ->sum('jumlah');
         }
 
-        return view('admin.jenis-gabah.index', compact('jenisGabahList', 'stokPerJenis'));
+        return view('admin.jenis-gabah.index', compact('jenisGabahList', 'stokPerJenis', 'pendingPerJenis'));
     }
 
     /**
@@ -51,25 +61,33 @@ class JenisGabahController extends Controller
         $jenisGabah = JenisGabah::withCount('detailPanen')->findOrFail($id);
 
         // Hitung total stok gabah jenis ini yang tersimpan
-        $totalStok = PenyimpananGabah::whereHas('detailPanen', function ($q) use ($id) {
+        $totalStok = (float) PenyimpananGabah::whereHas('detailPanen', function ($q) use ($id) {
                 $q->where('id_jenis_gabah', $id);
             })
             ->where('status', 'tersimpan')
             ->sum('jumlah');
 
-        // Stok per lumbung untuk jenis gabah ini
+        // Hitung total instruksi pending
+        $totalPending = (float) \App\Models\InstruksiPenyimpanan::whereHas('detailPanen', function ($q) use ($id) {
+                $q->where('id_jenis_gabah', $id);
+            })
+            ->where('status', 'pending')
+            ->sum('jumlah');
+
+        // Stok per lumbung untuk jenis gabah ini (FIFO)
         $stokPerLumbung = PenyimpananGabah::whereHas('detailPanen', function ($q) use ($id) {
                 $q->where('id_jenis_gabah', $id);
             })
             ->where('status', 'tersimpan')
             ->with(['slotLumbung.lumbung', 'detailPanen.panen.petani'])
-            ->orderBy('tanggal_masuk', 'desc')
+            ->orderBy('tanggal_masuk', 'asc') // FIFO: oldest first
             ->get()
             ->map(function ($item) {
                 return (object)[
-                    'slot' => $item->slotLumbung,
-                    'jumlah_gabah' => $item->jumlah,
+                    'slotLumbung' => $item->slotLumbung,
+                    'jumlah' => (float) $item->jumlah,
                     'tanggal_masuk' => $item->tanggal_masuk,
+                    'petani' => $item->detailPanen->panen->petani,
                 ];
             });
 
@@ -78,7 +96,7 @@ class JenisGabahController extends Controller
                 $q->where('id_jenis_gabah', $id);
             })
             ->where('status', 'tersimpan')
-            ->with('detailPanen.panen.petani')
+            ->with('detailPanen.panen.petani.kelompokTani')
             ->get()
             ->groupBy(function ($item) {
                 return $item->detailPanen->panen->id_petani;
@@ -89,12 +107,13 @@ class JenisGabahController extends Controller
                     'id_petani' => $petani->id_petani,
                     'nama_petani' => $petani->nama_petani,
                     'kelompokTani' => $petani->kelompokTani,
-                    'total_stok' => $group->sum('jumlah'),
+                    'total_stok' => (float) $group->sum('jumlah'),
                 ];
             })
+            ->sortByDesc('total_stok')
             ->values();
 
-        return view('admin.jenis-gabah.show', compact('jenisGabah', 'totalStok', 'stokPerLumbung', 'petaniDenganStok'));
+        return view('admin.jenis-gabah.show', compact('jenisGabah', 'totalStok', 'totalPending', 'stokPerLumbung', 'petaniDenganStok'));
     }
 
     /**

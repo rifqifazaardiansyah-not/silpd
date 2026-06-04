@@ -38,21 +38,43 @@
 </div>
 
 <!-- Stat Cards -->
-<div class="grid grid-cols-2 gap-6 mb-8">
+<div class="grid grid-cols-3 gap-6 mb-8">
     <!-- Jumlah Anggota -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Jumlah Anggota</p>
-        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ $kelompok->petani_count ?? 0 }}</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($kelompok->petani_count ?? 0, 2, ',', '.') }}</p>
         <p class="mt-1 text-xs text-gray-500">Petani terdaftar</p>
     </div>
 
     <!-- Total Stok Kelompok -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Stok Gabah</p>
-        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalStokKelompok, 0, ',', '.') }}</p>
-        <p class="mt-1 text-xs text-gray-500">kg tersimpan</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalStokKelompok, 2, ',', '.') }} kg</p>
+        <p class="mt-1 text-xs text-gray-500">Tersimpan di lumbung</p>
+    </div>
+
+    <!-- Total Pending -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Instruksi Pending</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-amber-600">{{ number_format($totalPendingKelompok, 2, ',', '.') }} kg</p>
+        <p class="mt-1 text-xs text-gray-500">Menunggu konfirmasi</p>
     </div>
 </div>
+
+<!-- Alert jika ada instruksi pending -->
+@if($totalPendingKelompok > 0)
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
+    <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-amber-900">Ada {{ number_format($totalPendingKelompok, 2, ',', '.') }} kg gabah menunggu konfirmasi</p>
+            <p class="text-xs text-amber-700 mt-1">Beberapa anggota kelompok ini memiliki instruksi penyimpanan yang belum dikonfirmasi pengelola.</p>
+        </div>
+    </div>
+</div>
+@endif
 
 <!-- Tabel Anggota -->
 <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -66,19 +88,31 @@
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">No</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Nama Petani</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Luas Lahan</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Stok Tersimpan</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Pending</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Status Akun</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-                @forelse($anggota as $index => $petani)
+                @forelse($anggotaPaginated as $index => $petani)
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ $anggota->firstItem() + $index }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ $anggotaPaginated->firstItem() + $index }}</td>
                     <td class="px-4 py-3 text-sm text-gray-900">
-                        <a href="{{ route('admin.petani.show', $petani->id_petani) }}" class="text-indigo-600 hover:text-indigo-700">
+                        <a href="{{ route('admin.petani.show', $petani->id_petani) }}" class="text-indigo-600 hover:text-indigo-700 font-medium">
                             {{ $petani->nama_petani }}
                         </a>
                     </td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($petani->luas_lahan, 2, ',', '.') }} ha</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        <span class="font-medium text-emerald-600">{{ number_format($petani->stok_tersimpan, 2, ',', '.') }} kg</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        @if($petani->instruksi_pending > 0)
+                        <span class="font-medium text-amber-600">{{ number_format($petani->instruksi_pending, 2, ',', '.') }} kg</span>
+                        @else
+                        <span class="text-gray-400">-</span>
+                        @endif
+                    </td>
                     <td class="px-4 py-3 text-sm">
                         @if($petani->login)
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">
@@ -93,7 +127,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada anggota</td>
+                    <td colspan="6" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada anggota</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -101,12 +135,12 @@
     </div>
 
     <!-- Pagination -->
-    @if($anggota->count() > 0)
+    @if($anggotaPaginated->count() > 0)
     <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
         <p class="text-xs text-gray-500">
-            Menampilkan {{ $anggota->firstItem() }}–{{ $anggota->lastItem() }} dari {{ $anggota->total() }} data
+            Menampilkan {{ $anggotaPaginated->firstItem() }}–{{ $anggotaPaginated->lastItem() }} dari {{ $anggotaPaginated->total() }} data
         </p>
-        {{ $anggota->links('vendor.pagination.tailwind') }}
+        {{ $anggotaPaginated->links('vendor.pagination.tailwind') }}
     </div>
     @endif
 </div>

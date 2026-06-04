@@ -83,9 +83,23 @@
             >
                 <option value="">Pilih entitas…</option>
                 @foreach($entitasTersedia as $entitas)
-                <option value="{{ $entitas->id }}" {{ old('ref_id') == $entitas->id ? 'selected' : '' }}>
-                    {{ $entitas->nama }}
-                </option>
+                    @php
+                        $id = match($role) {
+                            'petani' => $entitas->id_petani,
+                            'pengelola' => $entitas->id_pengelola,
+                            'admin' => $entitas->id_admin,
+                            default => null,
+                        };
+                        $nama = match($role) {
+                            'petani' => $entitas->nama_petani,
+                            'pengelola' => $entitas->nama_pengelola,
+                            'admin' => $entitas->nama_admin,
+                            default => '-',
+                        };
+                    @endphp
+                    <option value="{{ $id }}" {{ old('ref_id') == $id ? 'selected' : '' }}>
+                        {{ $nama }}
+                    </option>
                 @endforeach
             </select>
             @error('ref_id')
@@ -164,8 +178,13 @@
 
 <script>
 function updateEntitas() {
-    // This would typically fetch entitas based on selected role via AJAX
-    // For now, it's a placeholder for future enhancement
+    // Get selected role
+    const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+    
+    if (selectedRole) {
+        // Reload page with role parameter to get filtered entities
+        window.location.href = '{{ route("admin.akun.create") }}?role=' + selectedRole;
+    }
 }
 </script>
 

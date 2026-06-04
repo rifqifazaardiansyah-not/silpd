@@ -69,12 +69,12 @@
                             @endforelse
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($lumbung->total_kapasitas, 0, ',', '.') }} kg</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($lumbung->total_terpakai, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($lumbung->total_kapasitas, 2, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($lumbung->total_terpakai, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm">
                         <div class="w-32">
                             <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                <span>{{ $lumbung->persen_terpakai }}%</span>
+                                <span>{{ number_format($lumbung->persen_terpakai, 2, ',', '.') }}%</span>
                             </div>
                             <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                                 <div

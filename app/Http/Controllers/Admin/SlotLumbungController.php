@@ -35,7 +35,7 @@ class SlotLumbungController extends Controller
         $slotList->getCollection()->transform(function ($slot) {
             $terpakai = $slot->kapasitas - $slot->kapasitas_tersedia;
             $slot->persen_terpakai = $slot->kapasitas > 0
-                ? round(($terpakai / $slot->kapasitas) * 100, 1)
+                ? round(($terpakai / $slot->kapasitas) * 100, 2)
                 : 0;
             return $slot;
         });
@@ -118,7 +118,7 @@ class SlotLumbungController extends Controller
             return (object)[
                 'petani' => $item->detailPanen->panen->petani,
                 'jenisGabah' => $item->detailPanen->jenisGabah,
-                'jumlah_gabah' => $item->jumlah,
+                'jumlah' => (float) $item->jumlah,
                 'tanggal_masuk' => $item->tanggal_masuk,
                 'umur_hari' => $umur,
                 'is_kadaluarsa' => $umur > 90, // Kadaluarsa jika > 90 hari
@@ -139,14 +139,14 @@ class SlotLumbungController extends Controller
             return (object)[
                 'petani' => $item->detailPanen->panen->petani,
                 'jenisGabah' => $item->detailPanen->jenisGabah,
-                'jumlah_gabah' => $item->jumlah,
+                'jumlah' => (float) $item->jumlah,
                 'tanggal_masuk' => $item->tanggal_masuk,
             ];
         });
 
         $terpakai       = $slot->kapasitas - $slot->kapasitas_tersedia;
         $persenTerpakai = $slot->kapasitas > 0
-            ? round(($terpakai / $slot->kapasitas) * 100, 1)
+            ? round(($terpakai / $slot->kapasitas) * 100, 2)
             : 0;
 
         return view('admin.slot.show', compact('lumbung', 'slot', 'gabahTersimpan', 'riwayatPenyimpanan', 'terpakai', 'persenTerpakai'));

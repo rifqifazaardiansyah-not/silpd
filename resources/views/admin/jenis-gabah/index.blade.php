@@ -45,6 +45,7 @@
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">No</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Nama Jenis</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Stok Tersimpan</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Pending</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Aksi</th>
                 </tr>
             </thead>
@@ -52,9 +53,16 @@
                 @forelse($jenisGabahList as $index => $jenis)
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $jenisGabahList->firstItem() + $index }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ $jenis->nama_jenis }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">
-                        {{ number_format($stokPerJenis[$jenis->id_jenis_gabah] ?? 0, 0, ',', '.') }} kg
+                    <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ $jenis->nama_jenis }}</td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="font-medium text-emerald-600">{{ number_format($stokPerJenis[$jenis->id_jenis_gabah] ?? 0, 2, ',', '.') }} kg</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        @if(($pendingPerJenis[$jenis->id_jenis_gabah] ?? 0) > 0)
+                        <span class="font-medium text-amber-600">{{ number_format($pendingPerJenis[$jenis->id_jenis_gabah], 2, ',', '.') }} kg</span>
+                        @else
+                        <span class="text-gray-400">-</span>
+                        @endif
                     </td>
                     <td class="px-4 py-3 text-sm">
                         <div class="flex gap-2">
@@ -88,7 +96,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">Tidak ada data jenis gabah</td>
+                    <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">Tidak ada data jenis gabah</td>
                 </tr>
                 @endforelse
             </tbody>

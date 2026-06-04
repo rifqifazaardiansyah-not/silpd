@@ -38,6 +38,10 @@ Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function
     // Petani
     Route::resource('petani', Admin\PetaniController::class)->parameters(['petani' => 'id']);
     Route::get('petani/{id}', [Admin\PetaniController::class, 'show'])->name('petani.show');
+    
+    // API untuk Tom Select autocomplete
+    Route::get('api/petani/search', [Admin\PetaniController::class, 'apiSearch'])->name('api.petani.search');
+    Route::get('api/petani/{id}', [Admin\PetaniController::class, 'apiShow'])->name('api.petani.show');
 
     // Kelompok Tani
     Route::resource('kelompok', Admin\KelompokTaniController::class)->parameters(['kelompok' => 'id']);

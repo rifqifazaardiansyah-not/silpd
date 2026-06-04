@@ -467,8 +467,9 @@ class LaporanController extends Controller
      */
     public function eksporPanenCsv(Request $request)
     {
-        $dari   = $request->filled('dari') ? $request->dari : Carbon::now()->startOfMonth()->format('Y-m-d');
-        $sampai = $request->filled('sampai') ? $request->sampai : Carbon::now()->endOfMonth()->format('Y-m-d');
+        // Default rentang: Maret 2025 (sesuai data seeder, sama dengan method panen())
+        $dari   = $request->filled('dari') ? $request->dari : '2025-03-01';
+        $sampai = $request->filled('sampai') ? $request->sampai : '2025-03-31';
 
         $data = Panen::with(['petani.kelompokTani', 'detailPanen.jenisGabah'])
             ->whereBetween('tanggal_panen', [$dari, $sampai])

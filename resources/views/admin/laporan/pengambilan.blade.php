@@ -109,23 +109,19 @@
             <tr class="border-b border-gray-200 bg-gray-50">
                 <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Petani</th>
                 <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-500">Total Diambil</th>
-                <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-500">Jumlah Permintaan</th>
-                <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-500">Disetujui</th>
-                <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-500">Ditolak</th>
+                <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-500">Jumlah Pengambilan</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-            @forelse($rekapPerPetani as $petani)
+            @forelse($rekapPerPetani as $rekap)
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ $petani->nama_petani }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($petani->total_diambil) }} kg</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ $petani->jumlah_permintaan }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ $petani->jumlah_disetujui }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ $petani->jumlah_ditolak }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ $rekap['petani']->nama_petani }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($rekap['total_diambil_kg']) }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ $rekap['jumlah_pengambilan'] }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">
+                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">
                         Tidak ada data pengambilan
                     </td>
                 </tr>
@@ -149,11 +145,11 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-            @forelse($rekapPerJenis as $jenis)
+            @forelse($rekapPerJenis as $namaJenis => $data)
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ $jenis->nama_jenis }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($jenis->total_diambil) }} kg</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ $jenis->jumlah_permintaan }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ $namaJenis }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($data['total_diambil_kg']) }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ $data['jumlah_transaksi'] }}</td>
                 </tr>
             @empty
                 <tr>

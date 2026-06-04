@@ -52,7 +52,7 @@
         <div class="space-y-3 mb-6">
             @forelse($slotAlternatif as $slot)
                 <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                    <input type="radio" name="id_slot_lumbung" value="{{ $slot->id_slot_lumbung }}" required class="mt-1" {{ old('id_slot_lumbung') == $slot->id_slot_lumbung ? 'checked' : '' }}>
+                    <input type="radio" name="id_slot_baru" value="{{ $slot->id_slot }}" required class="mt-1" {{ old('id_slot_baru') == $slot->id_slot ? 'checked' : '' }}>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-900">{{ $slot->lumbung->nama_lumbung }}</p>
                         <p class="text-xs text-gray-500 mt-0.5">Kode: {{ $slot->kode_slot }}</p>
@@ -81,7 +81,7 @@
             @endforelse
         </div>
 
-        @error('id_slot_lumbung')
+        @error('id_slot_baru')
             <p class="text-xs text-red-600 mb-6">{{ $message }}</p>
         @enderror
 

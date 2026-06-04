@@ -41,7 +41,7 @@
 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
     <div class="flex justify-between items-center mb-3">
         <p class="text-sm font-medium text-gray-900">Kapasitas Lumbung</p>
-        <span class="text-sm font-semibold text-gray-900">{{ $persenTerpakai }}%</span>
+        <span class="text-sm font-semibold text-gray-900">{{ number_format($persenTerpakai, 2, ',', '.') }}%</span>
     </div>
     <div class="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
         <div
@@ -52,15 +52,15 @@
     <div class="grid grid-cols-3 gap-4 text-sm">
         <div>
             <p class="text-gray-500">Total Kapasitas</p>
-            <p class="text-lg font-semibold text-gray-900">{{ number_format($totalKapasitas, 0, ',', '.') }} kg</p>
+            <p class="text-lg font-semibold text-gray-900">{{ number_format($totalKapasitas, 2, ',', '.') }} kg</p>
         </div>
         <div>
             <p class="text-gray-500">Tersedia</p>
-            <p class="text-lg font-semibold text-emerald-600">{{ number_format($totalTersedia, 0, ',', '.') }} kg</p>
+            <p class="text-lg font-semibold text-emerald-600">{{ number_format($totalTersedia, 2, ',', '.') }} kg</p>
         </div>
         <div>
             <p class="text-gray-500">Terpakai</p>
-            <p class="text-lg font-semibold text-amber-600">{{ number_format($totalTerpakai, 0, ',', '.') }} kg</p>
+            <p class="text-lg font-semibold text-amber-600">{{ number_format($totalTerpakai, 2, ',', '.') }} kg</p>
         </div>
     </div>
 </div>
@@ -141,13 +141,13 @@
                 @forelse($lumbung->slotLumbung as $slot)
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 text-sm text-gray-900 font-mono">{{ $slot->kode_slot }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($slot->kapasitas, 0, ',', '.') }} kg</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($slot->kapasitas_tersedia, 0, ',', '.') }} kg</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($slot->kapasitas - $slot->kapasitas_tersedia, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($slot->kapasitas, 2, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($slot->kapasitas_tersedia, 2, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($slot->kapasitas - $slot->kapasitas_tersedia, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm">
                         @php
                             $terpakai = $slot->kapasitas - $slot->kapasitas_tersedia;
-                            $persenSlot = $slot->kapasitas > 0 ? round(($terpakai / $slot->kapasitas) * 100, 1) : 0;
+                            $persenSlot = $slot->kapasitas > 0 ? round(($terpakai / $slot->kapasitas) * 100, 2) : 0;
                         @endphp
                         <div class="w-24">
                             <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -156,7 +156,7 @@
                                     style="width: {{ $persenSlot }}%"
                                 ></div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">{{ $persenSlot }}%</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ number_format($persenSlot, 2, ',', '.') }}%</p>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-sm">
@@ -199,10 +199,11 @@
     </div>
 </div>
 
-<!-- Stok Gabah Table -->
+<!-- Stok Gabah Table (FIFO) -->
 <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100">
-        <h3 class="text-sm font-semibold text-gray-900 tracking-tight">Stok Gabah dalam Lumbung</h3>
+        <h3 class="text-sm font-semibold text-gray-900 tracking-tight">Stok Gabah dalam Lumbung (FIFO)</h3>
+        <p class="text-xs text-gray-500 mt-1">Urutan berdasarkan tanggal masuk (tertua dahulu)</p>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full">
@@ -213,20 +214,26 @@
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Slot</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Jumlah</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Tanggal Masuk</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Umur</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($stokList as $item)
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ $item->detailPanen->panen->petani->nama_petani ?? '-' }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        <a href="{{ route('admin.petani.show', $item->detailPanen->panen->petani->id_petani) }}" class="text-indigo-600 hover:text-indigo-700">
+                            {{ $item->detailPanen->panen->petani->nama_petani ?? '-' }}
+                        </a>
+                    </td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $item->detailPanen->jenisGabah->nama_jenis ?? '-' }}</td>
                     <td class="px-4 py-3 text-sm text-gray-900 font-mono">{{ $item->slotLumbung->kode_slot ?? '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($item->jumlah, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ number_format($item->jumlah, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm text-gray-500">{{ \Carbon\Carbon::parse($item->tanggal_masuk)->format('d M Y') }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">{{ \Carbon\Carbon::parse($item->tanggal_masuk)->diffInDays(now()) }} hari</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada stok</td>
+                    <td colspan="6" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada stok</td>
                 </tr>
                 @endforelse
             </tbody>

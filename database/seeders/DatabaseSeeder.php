@@ -363,7 +363,7 @@ class DatabaseSeeder extends Seeder
                 'id_petani'          => 2,   // Nurhayati
                 'id_penyimpanan'     => 3,   // Ciherang di slot B1
                 'tanggal_permintaan' => '2025-04-05',
-                'status'             => 'pending',  // Masih menunggu persetujuan
+                'status'             => 'disetujui',  // Sudah disetujui admin, menunggu konfirmasi pengelola
                 'created_at'         => now(),
                 'updated_at'         => now(),
             ],
@@ -392,6 +392,8 @@ class DatabaseSeeder extends Seeder
                 'created_at'      => now(),
                 'updated_at'      => now(),
             ],
+            // Catatan: detail_pengambilan dibuat oleh Admin saat menyetujui permintaan,
+            // bukan saat pengelola konfirmasi. Pengelola hanya konfirmasi pengeluaran fisik.
         ]);
 
         // =====================================================================

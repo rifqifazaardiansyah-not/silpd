@@ -37,17 +37,43 @@
     </div>
 </div>
 
-<!-- Total Stok Stat -->
-<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
-    <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Stok Tersimpan</p>
-    <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalStok, 0, ',', '.') }} kg</p>
-    <p class="mt-1 text-xs text-gray-500">Gabah jenis ini di semua lumbung</p>
+<!-- Stat Cards -->
+<div class="grid grid-cols-2 gap-6 mb-8">
+    <!-- Total Stok Tersimpan -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Stok Tersimpan</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalStok, 2, ',', '.') }} kg</p>
+        <p class="mt-1 text-xs text-gray-500">Gabah jenis ini di semua lumbung</p>
+    </div>
+
+    <!-- Instruksi Pending -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Instruksi Pending</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-amber-600">{{ number_format($totalPending, 2, ',', '.') }} kg</p>
+        <p class="mt-1 text-xs text-gray-500">Menunggu konfirmasi</p>
+    </div>
 </div>
 
-<!-- Stok Per Lumbung Table -->
+<!-- Alert jika ada instruksi pending -->
+@if($totalPending > 0)
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
+    <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-amber-900">Ada {{ number_format($totalPending, 2, ',', '.') }} kg gabah {{ $jenisGabah->nama_jenis }} menunggu konfirmasi</p>
+            <p class="text-xs text-amber-700 mt-1">Instruksi penyimpanan belum dikonfirmasi pengelola.</p>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Stok Per Lumbung Table (FIFO) -->
 <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
     <div class="px-6 py-4 border-b border-gray-100">
-        <h3 class="text-sm font-semibold text-gray-900 tracking-tight">Stok Per Lumbung</h3>
+        <h3 class="text-sm font-semibold text-gray-900 tracking-tight">Stok Per Lumbung (FIFO)</h3>
+        <p class="text-xs text-gray-500 mt-1">Urutan berdasarkan tanggal masuk (tertua dahulu)</p>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full">
@@ -55,21 +81,29 @@
                 <tr class="border-b border-gray-200 bg-gray-50">
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Lumbung</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Slot</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Petani</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Jumlah</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Tanggal Masuk</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Umur</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($stokPerLumbung as $item)
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ $item->slot->lumbung->nama_lumbung ?? '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ $item->slot->nama_slot ?? '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($item->jumlah_gabah, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ $item->slotLumbung->lumbung->nama_lumbung ?? '-' }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ $item->slotLumbung->kode_slot ?? '-' }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        <a href="{{ route('admin.petani.show', $item->petani->id_petani) }}" class="text-indigo-600 hover:text-indigo-700">
+                            {{ $item->petani->nama_petani ?? '-' }}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ number_format($item->jumlah, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm text-gray-500">{{ $item->tanggal_masuk->format('d M Y') }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">{{ $item->tanggal_masuk->diffInDays(now()) }} hari</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada stok</td>
+                    <td colspan="6" class="px-4 py-6 text-center text-sm text-gray-500">Tidak ada stok</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -102,7 +136,7 @@
                         </a>
                     </td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $petani->kelompokTani->nama_kelompok ?? '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($petani->total_stok, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ number_format($petani->total_stok, 2, ',', '.') }} kg</td>
                 </tr>
                 @empty
                 <tr>

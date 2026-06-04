@@ -41,19 +41,63 @@ class KelompokTaniController extends Controller
     {
         $kelompok = KelompokTani::withCount('petani')->findOrFail($id);
         
-        // Paginate anggota petani
-        $anggota = $kelompok->petani()->paginate(10);
+        // Paginate anggota petani dengan relasi login dan hitung stok masing-masing
+        $anggota = $kelompok->petani()
+            ->with('login')
+            ->withCount([
+                'panen'
+            ])
+            ->get()
+            ->map(function ($petani) {
+                // Hitung stok tersimpan per petani
+                $stokTersimpan = PenyimpananGabah::whereHas('detailPanen.panen', function ($q) use ($petani) {
+                    $q->where('id_petani', $petani->id_petani);
+                })
+                ->where('status', 'tersimpan')
+                ->sum('jumlah');
+                
+                $petani->stok_tersimpan = (float) $stokTersimpan;
+                
+                // Hitung instruksi pending per petani
+                $instruksiPending = \App\Models\InstruksiPenyimpanan::whereHas('detailPanen.panen', function ($q) use ($petani) {
+                    $q->where('id_petani', $petani->id_petani);
+                })
+                ->where('status', 'pending')
+                ->sum('jumlah');
+                
+                $petani->instruksi_pending = (float) $instruksiPending;
+                
+                return $petani;
+            });
         
-        // Calculate total stok gabah for the group
-        // Join: penyimpanan_gabah -> detail_panen -> panen -> petani -> kelompok_tani
-        $totalStokKelompok = PenyimpananGabah::join('detail_panen', 'penyimpanan_gabah.id_detail', '=', 'detail_panen.id_detail')
+        // Manual pagination
+        $currentPage = request()->get('page', 1);
+        $perPage = 10;
+        $anggotaPaginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $anggota->forPage($currentPage, $perPage),
+            $anggota->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+        
+        // Calculate total stok gabah tersimpan (sudah masuk lumbung)
+        $totalStokKelompok = (float) PenyimpananGabah::join('detail_panen', 'penyimpanan_gabah.id_detail', '=', 'detail_panen.id_detail')
             ->join('panen', 'detail_panen.id_panen', '=', 'panen.id_panen')
             ->join('petani', 'panen.id_petani', '=', 'petani.id_petani')
             ->where('petani.id_kelompok', $id)
             ->where('penyimpanan_gabah.status', 'tersimpan')
             ->sum(DB::raw('penyimpanan_gabah.jumlah'));
 
-        return view('admin.kelompok.show', compact('kelompok', 'anggota', 'totalStokKelompok'));
+        // Calculate total instruksi pending (belum masuk lumbung)
+        $totalPendingKelompok = (float) \App\Models\InstruksiPenyimpanan::join('detail_panen', 'instruksi_penyimpanan.id_detail', '=', 'detail_panen.id_detail')
+            ->join('panen', 'detail_panen.id_panen', '=', 'panen.id_panen')
+            ->join('petani', 'panen.id_petani', '=', 'petani.id_petani')
+            ->where('petani.id_kelompok', $id)
+            ->where('instruksi_penyimpanan.status', 'pending')
+            ->sum(DB::raw('instruksi_penyimpanan.jumlah'));
+
+        return view('admin.kelompok.show', compact('kelompok', 'anggotaPaginated', 'totalStokKelompok', 'totalPendingKelompok'));
     }
 
     /**

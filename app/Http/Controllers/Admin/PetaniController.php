@@ -168,4 +168,41 @@ class PetaniController extends Controller
             ->route('admin.petani.index')
             ->with('success', "Data petani \"{$nama}\" berhasil dihapus.");
     }
+
+    /**
+     * API endpoint untuk Tom Select search.
+     * Digunakan untuk autocomplete pemilihan petani.
+     */
+    public function apiSearch(Request $request)
+    {
+        $query = Petani::with('kelompokTani');
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_petani', 'like', "%{$search}%")
+                  ->orWhere('nik', 'like', "%{$search}%");
+            });
+        }
+
+        $petani = $query->orderBy('nama_petani')->paginate(15);
+
+        return response()->json([
+            'data'         => $petani->items(),
+            'current_page' => $petani->currentPage(),
+            'last_page'    => $petani->lastPage(),
+            'total'        => $petani->total(),
+        ]);
+    }
+
+    /**
+     * API endpoint untuk mendapatkan single petani.
+     * Digunakan untuk menampilkan old value saat validation error.
+     */
+    public function apiShow($id)
+    {
+        $petani = Petani::with('kelompokTani')->findOrFail($id);
+
+        return response()->json($petani);
+    }
 }

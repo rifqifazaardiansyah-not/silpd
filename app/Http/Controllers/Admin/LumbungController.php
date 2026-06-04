@@ -26,11 +26,11 @@ class LumbungController extends Controller
 
         // Tambahkan ringkasan kapasitas ke setiap lumbung
         $lumbungList->getCollection()->transform(function ($lumbung) {
-            $lumbung->total_kapasitas  = $lumbung->slotLumbung->sum('kapasitas');
-            $lumbung->total_tersedia   = $lumbung->slotLumbung->sum('kapasitas_tersedia');
+            $lumbung->total_kapasitas  = (float) $lumbung->slotLumbung->sum('kapasitas');
+            $lumbung->total_tersedia   = (float) $lumbung->slotLumbung->sum('kapasitas_tersedia');
             $lumbung->total_terpakai   = $lumbung->total_kapasitas - $lumbung->total_tersedia;
             $lumbung->persen_terpakai  = $lumbung->total_kapasitas > 0
-                ? round(($lumbung->total_terpakai / $lumbung->total_kapasitas) * 100, 1)
+                ? round(($lumbung->total_terpakai / $lumbung->total_kapasitas) * 100, 2)
                 : 0;
             return $lumbung;
         });
@@ -103,11 +103,11 @@ class LumbungController extends Controller
         ->findOrFail($id);
 
         // Ringkasan kapasitas
-        $totalKapasitas = $lumbung->slotLumbung->sum('kapasitas');
-        $totalTersedia  = $lumbung->slotLumbung->sum('kapasitas_tersedia');
+        $totalKapasitas = (float) $lumbung->slotLumbung->sum('kapasitas');
+        $totalTersedia  = (float) $lumbung->slotLumbung->sum('kapasitas_tersedia');
         $totalTerpakai  = $totalKapasitas - $totalTersedia;
         $persenTerpakai = $totalKapasitas > 0
-            ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
+            ? round(($totalTerpakai / $totalKapasitas) * 100, 2)
             : 0;
 
         // Notifikasi slot hampir penuh (kapasitas tersedia < 20%)
@@ -133,7 +133,7 @@ class LumbungController extends Controller
             }
         }
 
-        // Daftar stok gabah (untuk tabel di bawah)
+        // Daftar stok gabah (untuk tabel di bawah) - sorted by FIFO
         $stokList = collect();
         foreach ($lumbung->slotLumbung as $slot) {
             foreach ($slot->penyimpananGabah as $penyimpanan) {
@@ -142,6 +142,7 @@ class LumbungController extends Controller
                 }
             }
         }
+        $stokList = $stokList->sortBy('tanggal_masuk')->values();
 
         return view('admin.lumbung.show', compact(
             'lumbung',
