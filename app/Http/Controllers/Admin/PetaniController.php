@@ -75,7 +75,7 @@ class PetaniController extends Controller
             ->withCount('panen')
             ->findOrFail($id);
 
-        // Stok gabah aktif milik petani ini
+        // Stok gabah aktif milik petani ini (sudah fisik masuk ke lumbung)
         $stokAktif = PenyimpananGabah::whereHas('detailPanen.panen', function ($q) use ($id) {
                 $q->where('id_petani', $id);
             })
@@ -89,13 +89,27 @@ class PetaniController extends Controller
 
         $totalStok = $stokAktif->sum('jumlah');
 
+        // Instruksi yang masih pending (belum masuk lumbung)
+        $instruksiPending = \App\Models\InstruksiPenyimpanan::whereHas('detailPanen.panen', function ($q) use ($id) {
+                $q->where('id_petani', $id);
+            })
+            ->where('status', 'pending')
+            ->with([
+                'detailPanen.jenisGabah',
+                'slotLumbung.lumbung',
+            ])
+            ->orderBy('tanggal_instruksi')
+            ->get();
+
+        $totalPending = $instruksiPending->sum('jumlah');
+
         // Riwayat panen dengan pagination
         $riwayatPanen = Panen::where('id_petani', $id)
             ->with('detailPanen.jenisGabah')
             ->orderBy('tanggal_panen', 'desc')
             ->paginate(10);
 
-        return view('admin.petani.show', compact('petani', 'stokAktif', 'totalStok', 'riwayatPanen'));
+        return view('admin.petani.show', compact('petani', 'stokAktif', 'totalStok', 'instruksiPending', 'totalPending', 'riwayatPanen'));
     }
 
     /**

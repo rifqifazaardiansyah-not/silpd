@@ -30,15 +30,15 @@ class DashboardController extends Controller
     public function index()
     {
         // ── Statistik global ──────────────────────────────────────────────────
-        $totalPetani   = Petani::count();
-        $totalLumbung  = Lumbung::count();
-        $totalSlot     = SlotLumbung::count();
+        $totalPetani   = (float) Petani::count();
+        $totalLumbung  = (float) Lumbung::count();
+        $totalSlot     = (float) SlotLumbung::count();
 
-        $totalPanenBulanIni = Panen::whereMonth('tanggal_panen', Carbon::now()->month)
+        $totalPanenBulanIni = (float) Panen::whereMonth('tanggal_panen', Carbon::now()->month)
             ->whereYear('tanggal_panen', Carbon::now()->year)
             ->count();
 
-        $totalGabahTersimpan = PenyimpananGabah::where('status', 'tersimpan')->sum('jumlah');
+        $totalGabahTersimpan = (float) PenyimpananGabah::where('status', 'tersimpan')->sum('jumlah');
 
         // ── Permintaan pengambilan pending (harus divalidasi admin) ───────────
         $permintaanPending = PermintaanPengambilan::where('status', 'pending')
@@ -52,7 +52,7 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        $jumlahPending = PermintaanPengambilan::where('status', 'pending')->count();
+        $jumlahPending = (float) PermintaanPengambilan::where('status', 'pending')->count();
 
         // ── Instruksi penyimpanan yang belum dikonfirmasi ─────────────────────
         $instruksiPending = InstruksiPenyimpanan::where('status', 'pending')
@@ -65,7 +65,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $jumlahInstruksiPending = InstruksiPenyimpanan::where('status', 'pending')->count();
+        $jumlahInstruksiPending = (float) InstruksiPenyimpanan::where('status', 'pending')->count();
 
         // ── Notifikasi: slot hampir penuh ─────────────────────────────────────
         $thresholdKapasitas = config('silpd.threshold_kapasitas_persen', 20);
@@ -89,7 +89,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $jumlahGabahKadaluarsa = PenyimpananGabah::where('status', 'tersimpan')
+        $jumlahGabahKadaluarsa = (float) PenyimpananGabah::where('status', 'tersimpan')
             ->where('tanggal_masuk', '<=', $batasDate)
             ->count();
 
@@ -99,8 +99,8 @@ class DashboardController extends Controller
             ->join('jenis_gabah', 'detail_panen.id_jenis_gabah', '=', 'jenis_gabah.id_jenis_gabah')
             ->select(
                 'jenis_gabah.nama_jenis',
-                DB::raw('SUM(penyimpanan_gabah.jumlah) as total_stok'),
-                DB::raw('COUNT(penyimpanan_gabah.id_penyimpanan) as jumlah_lot')
+                DB::raw('CAST(SUM(penyimpanan_gabah.jumlah) AS DECIMAL(10,2)) as total_stok'),
+                DB::raw('CAST(COUNT(penyimpanan_gabah.id_penyimpanan) AS DECIMAL(10,2)) as jumlah_lot')
             )
             ->groupBy('jenis_gabah.id_jenis_gabah', 'jenis_gabah.nama_jenis')
             ->orderByDesc('total_stok')
@@ -110,7 +110,7 @@ class DashboardController extends Controller
         $grafikPanen = collect();
         for ($i = 5; $i >= 0; $i--) {
             $bulan = Carbon::now()->subMonths($i);
-            $totalPanen = Panen::whereMonth('tanggal_panen', $bulan->month)
+            $totalPanen = (float) Panen::whereMonth('tanggal_panen', $bulan->month)
                 ->whereYear('tanggal_panen', $bulan->year)
                 ->count();
 
@@ -121,22 +121,22 @@ class DashboardController extends Controller
         }
 
         // ── Kapasitas lumbung keseluruhan ─────────────────────────────────────
-        $totalKapasitas  = SlotLumbung::sum('kapasitas');
-        $totalTersedia   = SlotLumbung::sum('kapasitas_tersedia');
+        $totalKapasitas  = (float) SlotLumbung::sum('kapasitas');
+        $totalTersedia   = (float) SlotLumbung::sum('kapasitas_tersedia');
         $totalTerpakai   = $totalKapasitas - $totalTersedia;
         $persenTerpakai  = $totalKapasitas > 0
-            ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
+            ? round(($totalTerpakai / $totalKapasitas) * 100, 2)
             : 0;
 
         // ── Ringkasan kapasitas per lumbung ──────────────────────────────────
         $ringkasanLumbung = Lumbung::with('slotLumbung')
             ->get()
             ->map(function ($lumbung) {
-                $totalKapasitas = $lumbung->slotLumbung->sum('kapasitas');
-                $totalTersedia  = $lumbung->slotLumbung->sum('kapasitas_tersedia');
+                $totalKapasitas = (float) $lumbung->slotLumbung->sum('kapasitas');
+                $totalTersedia  = (float) $lumbung->slotLumbung->sum('kapasitas_tersedia');
                 $totalTerpakai  = $totalKapasitas - $totalTersedia;
                 $persenTerpakai = $totalKapasitas > 0
-                    ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
+                    ? round(($totalTerpakai / $totalKapasitas) * 100, 2)
                     : 0;
 
                 return (object) [

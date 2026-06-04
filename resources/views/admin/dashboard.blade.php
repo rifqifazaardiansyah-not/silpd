@@ -27,7 +27,7 @@
                 </svg>
             </span>
         </div>
-        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ $totalPetani }}</p>
+        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($totalPetani, 2, ',', '.') }}</p>
         <p class="mt-1 text-sm text-slate-600">Petani terdaftar</p>
     </div>
 
@@ -41,7 +41,7 @@
                 </svg>
             </span>
         </div>
-        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($totalStokAktif, 0, ',', '.') }}</p>
+        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($totalStokAktif, 2, ',', '.') }}</p>
         <p class="mt-1 text-sm text-slate-600">kg tersimpan</p>
     </div>
 
@@ -55,7 +55,7 @@
                 </svg>
             </span>
         </div>
-        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ $panenBulanIni }}</p>
+        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($panenBulanIni, 2, ',', '.') }}</p>
         <p class="mt-1 text-sm text-slate-600">transaksi panen</p>
     </div>
 
@@ -69,7 +69,7 @@
                 </svg>
             </span>
         </div>
-        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ $totalLumbung }}</p>
+        <p class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($totalLumbung, 2, ',', '.') }}</p>
         <p class="mt-1 text-sm text-slate-600">lumbung aktif</p>
     </div>
 </div>
@@ -81,7 +81,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c.866-1.5 2.845-2.501 5.303-2.501s4.437 1.001 5.303 2.501M3.75 21h16.5A2.25 2.25 0 0021 18.75V9a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9v9.75A2.25 2.25 0 005.25 21z" />
     </svg>
     <div>
-        <p class="text-sm font-semibold" style="color: #CA8A04">{{ $slotHampirPenuh->count() }} Slot Hampir Penuh</p>
+        <p class="text-sm font-semibold" style="color: #CA8A04">{{ number_format($slotHampirPenuh->count(), 2, ',', '.') }} Slot Hampir Penuh</p>
         <p class="text-sm mt-0.5" style="color: #A16207">Beberapa slot lumbung sudah mencapai kapasitas 80% atau lebih.</p>
     </div>
 </div>
@@ -93,7 +93,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303-3.376c-.866-1.5-2.845-2.501-5.303-2.501S13.437 7.5 12.697 9m0 0V21m0-13.5a6 6 0 00-5.303 2.501M3.75 21H21A2.25 2.25 0 0023.25 18.75V9a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 9v9.75A2.25 2.25 0 003.75 21z" />
     </svg>
     <div>
-        <p class="text-sm font-semibold" style="color: #DC2626">{{ $gabahKadaluarsa->count() }} Lot Gabah Melewati Batas Simpan</p>
+        <p class="text-sm font-semibold" style="color: #DC2626">{{ number_format($gabahKadaluarsa->count(), 2, ',', '.') }} Lot Gabah Melewati Batas Simpan</p>
         <p class="text-sm mt-0.5" style="color: #991B1B">Ada gabah yang sudah melampaui waktu penyimpanan maksimal. Segera ambil atau proses.</p>
     </div>
 </div>
@@ -121,7 +121,7 @@
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="px-4 py-3 text-sm text-slate-900">{{ $item->petani->nama_petani ?? '-' }}</td>
                         <td class="px-4 py-3 text-sm text-slate-900">{{ $item->penyimpananGabah->detailPanen->jenisGabah->nama_jenis ?? '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-900">{{ number_format($item->detailPengambilan->sum('jumlah'), 0, ',', '.') }} kg</td>
+                        <td class="px-4 py-3 text-sm text-slate-900">{{ number_format($item->detailPengambilan->sum('jumlah'), 2, ',', '.') }} kg</td>
                         <td class="px-4 py-3 text-sm text-slate-600">{{ $item->tanggal_permintaan->format('d M Y') }}</td>
                     </tr>
                     @empty
@@ -135,7 +135,7 @@
         @if($jumlahPermintaanPending > 5)
         <div class="px-6 py-3 border-t border-slate-200 bg-slate-50">
             <a href="{{ route('admin.permintaan.index') }}" class="text-sm font-medium" style="color: #059669">
-                Lihat Semua ({{ $jumlahPermintaanPending }}) →
+                Lihat Semua ({{ number_format($jumlahPermintaanPending, 2, ',', '.') }}) →
             </a>
         </div>
         @endif
@@ -161,7 +161,7 @@
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="px-4 py-3 text-sm text-slate-900">{{ $item->detailPanen->panen->petani->nama_petani ?? '-' }}</td>
                         <td class="px-4 py-3 text-sm text-slate-900">{{ $item->slotLumbung->kode_slot ?? '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-900">{{ number_format($item->jumlah, 0, ',', '.') }} kg</td>
+                        <td class="px-4 py-3 text-sm text-slate-900">{{ number_format($item->jumlah, 2, ',', '.') }} kg</td>
                         <td class="px-4 py-3 text-sm text-slate-600">{{ $item->tanggal_instruksi->format('d M Y') }}</td>
                     </tr>
                     @empty
@@ -175,7 +175,7 @@
         @if($jumlahInstruksiPending > 5)
         <div class="px-6 py-3 border-t border-slate-200 bg-slate-50">
             <a href="{{ route('admin.instruksi.index') }}" class="text-sm font-medium" style="color: #059669">
-                Lihat Semua ({{ $jumlahInstruksiPending }}) →
+                Lihat Semua ({{ number_format($jumlahInstruksiPending, 2, ',', '.') }}) →
             </a>
         </div>
         @endif
@@ -192,7 +192,7 @@
         <div>
             <div class="flex justify-between items-center mb-2">
                 <p class="text-sm font-medium text-slate-900">{{ $item->nama_lumbung }}</p>
-                <span class="text-xs text-slate-600">{{ $item->persenTerpakai }}%</span>
+                <span class="text-xs text-slate-600">{{ number_format($item->persenTerpakai, 2, ',', '.') }}%</span>
             </div>
             <div class="h-2 rounded-full overflow-hidden" style="background-color: #E2E8F0;">
                 <div
@@ -225,8 +225,8 @@
                 @forelse($stokPerJenis as $item)
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-4 py-3 text-sm text-slate-900">{{ $item->nama_jenis }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-900">{{ number_format($item->total_stok, 0, ',', '.') }} kg</td>
-                    <td class="px-4 py-3 text-sm text-slate-900">{{ $item->jumlah_lot }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-900">{{ number_format($item->total_stok, 2, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-slate-900">{{ number_format($item->jumlah_lot, 2, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
