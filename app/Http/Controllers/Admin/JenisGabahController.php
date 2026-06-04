@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\JenisGabah;
+use App\Models\PenyimpananGabah;
 use Illuminate\Http\Request;
 
 class JenisGabahController extends Controller
@@ -21,7 +22,17 @@ class JenisGabahController extends Controller
 
         $jenisGabahList = $query->orderBy('nama_jenis')->paginate(15);
 
-        return view('admin.jenis-gabah.index', compact('jenisGabahList'));
+        // Hitung stok tersimpan untuk setiap jenis gabah
+        $stokPerJenis = [];
+        foreach ($jenisGabahList as $jenis) {
+            $stokPerJenis[$jenis->id_jenis_gabah] = PenyimpananGabah::whereHas('detailPanen', function ($q) use ($jenis) {
+                    $q->where('id_jenis_gabah', $jenis->id_jenis_gabah);
+                })
+                ->where('status', 'tersimpan')
+                ->sum('jumlah');
+        }
+
+        return view('admin.jenis-gabah.index', compact('jenisGabahList', 'stokPerJenis'));
     }
 
     /**
@@ -30,6 +41,60 @@ class JenisGabahController extends Controller
     public function create()
     {
         return view('admin.jenis-gabah.create');
+    }
+
+    /**
+     * Tampilkan detail jenis gabah.
+     */
+    public function show(int $id)
+    {
+        $jenisGabah = JenisGabah::withCount('detailPanen')->findOrFail($id);
+
+        // Hitung total stok gabah jenis ini yang tersimpan
+        $totalStok = PenyimpananGabah::whereHas('detailPanen', function ($q) use ($id) {
+                $q->where('id_jenis_gabah', $id);
+            })
+            ->where('status', 'tersimpan')
+            ->sum('jumlah');
+
+        // Stok per lumbung untuk jenis gabah ini
+        $stokPerLumbung = PenyimpananGabah::whereHas('detailPanen', function ($q) use ($id) {
+                $q->where('id_jenis_gabah', $id);
+            })
+            ->where('status', 'tersimpan')
+            ->with(['slotLumbung.lumbung', 'detailPanen.panen.petani'])
+            ->orderBy('tanggal_masuk', 'desc')
+            ->get()
+            ->map(function ($item) {
+                return (object)[
+                    'slot' => $item->slotLumbung,
+                    'jumlah_gabah' => $item->jumlah,
+                    'tanggal_masuk' => $item->tanggal_masuk,
+                ];
+            });
+
+        // Petani yang memiliki stok jenis gabah ini
+        $petaniDenganStok = PenyimpananGabah::whereHas('detailPanen', function ($q) use ($id) {
+                $q->where('id_jenis_gabah', $id);
+            })
+            ->where('status', 'tersimpan')
+            ->with('detailPanen.panen.petani')
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->detailPanen->panen->id_petani;
+            })
+            ->map(function ($group) {
+                $petani = $group->first()->detailPanen->panen->petani;
+                return (object)[
+                    'id_petani' => $petani->id_petani,
+                    'nama_petani' => $petani->nama_petani,
+                    'kelompokTani' => $petani->kelompokTani,
+                    'total_stok' => $group->sum('jumlah'),
+                ];
+            })
+            ->values();
+
+        return view('admin.jenis-gabah.show', compact('jenisGabah', 'totalStok', 'stokPerLumbung', 'petaniDenganStok'));
     }
 
     /**

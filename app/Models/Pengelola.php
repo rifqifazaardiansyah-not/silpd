@@ -4,12 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Pengelola extends Model
 {
     protected $table = 'pengelola';
     protected $primaryKey = 'id_pengelola';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [
@@ -20,11 +23,11 @@ class Pengelola extends Model
     /**
      * Hubungan: Pengelola memiliki data login
      *
-     * @return HasMany
+     * @return HasOne
      */
-    public function login(): HasMany
+    public function login(): HasOne
     {
-        return $this->hasMany(Login::class, 'id_pengelola', 'id_pengelola');
+        return $this->hasOne(Login::class, 'id_pengelola', 'id_pengelola');
     }
 
     /**

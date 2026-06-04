@@ -115,6 +115,13 @@ class DatabaseSeeder extends Seeder
                 'created_at'     => now(),
                 'updated_at'     => now(),
             ],
+            [
+                'id_pengelola'   => 3,
+                'nama_pengelola' => 'Rina Wijaya',
+                'no_hp'          => '083456789012',
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ],
         ]);
 
         // =====================================================================
@@ -149,10 +156,12 @@ class DatabaseSeeder extends Seeder
         //   Lumbung Pusat:
         //     - Budi Santoso  → pemilik_akun  (penanggungjawab utama)
         //     - Dewi Lestari  → anggota       (membantu pengelolaan)
+        //     - Rina Wijaya   → pemilik_akun  (HANYA punya akses ke Lumbung Pusat)
         //
         // Ini mendemonstrasikan bahwa:
         //   - Satu pengelola bisa ada di banyak lumbung (dengan peran berbeda)
         //   - Satu lumbung bisa punya banyak pengelola (termasuk banyak pemilik_akun)
+        //   - Rina hanya punya akses ke 1 lumbung (untuk test filtering)
         // =====================================================================
         DB::table('lumbung_pengelola')->insert([
             [
@@ -187,10 +196,19 @@ class DatabaseSeeder extends Seeder
                 'created_at'           => now(),
                 'updated_at'           => now(),
             ],
+            [
+                'id_lumbung_pengelola' => 5,
+                'id_lumbung'           => 2,
+                'id_pengelola'         => 3,  // Rina Wijaya (HANYA Lumbung Pusat!)
+                'peran'                => 'pemilik_akun',
+                'created_at'           => now(),
+                'updated_at'           => now(),
+            ],
         ]);
 
         // =====================================================================
         // 9. SLOT LUMBUNG
+        // Kapasitas tersedia akan dikurangi setelah ada penyimpanan gabah.
         // =====================================================================
         DB::table('slot_lumbung')->insert([
             [
@@ -198,7 +216,7 @@ class DatabaseSeeder extends Seeder
                 'id_lumbung'         => 1,
                 'kode_slot'          => 'A1',
                 'kapasitas'          => 2000,
-                'kapasitas_tersedia' => 1200,
+                'kapasitas_tersedia' => 1976,  // 2000 - 24 (IR64 Slamet)
                 'created_at'         => now(),
                 'updated_at'         => now(),
             ],
@@ -207,7 +225,7 @@ class DatabaseSeeder extends Seeder
                 'id_lumbung'         => 1,
                 'kode_slot'          => 'A2',
                 'kapasitas'          => 1500,
-                'kapasitas_tersedia' => 1500,
+                'kapasitas_tersedia' => 1486.50,  // 1500 - 13.5 (Ciherang Slamet)
                 'created_at'         => now(),
                 'updated_at'         => now(),
             ],
@@ -216,22 +234,78 @@ class DatabaseSeeder extends Seeder
                 'id_lumbung'         => 2,
                 'kode_slot'          => 'B1',
                 'kapasitas'          => 5000,
-                'kapasitas_tersedia' => 3500,
+                'kapasitas_tersedia' => 4982,  // 5000 - 18 (Ciherang Nurhayati)
                 'created_at'         => now(),
                 'updated_at'         => now(),
             ],
         ]);
 
         // =====================================================================
-        // 10. PENYIMPANAN GABAH
-        // Data penyimpanan yang sudah dikonfirmasi pengelola.
+        // 10. INSTRUKSI PENYIMPANAN
+        // Dibuat otomatis oleh sistem atau manual oleh admin.
+        // Semua detail panen harus punya instruksi.
+        // =====================================================================
+        DB::table('instruksi_penyimpanan')->insert([
+            [
+                'id_instruksi'      => 1,
+                'id_detail'         => 1,   // IR64 milik Slamet (24 kg)
+                'id_slot'           => 1,   // Slot A1 - Lumbung Desa A
+                'jumlah'            => 24.00,
+                'tanggal_instruksi' => '2025-03-11',
+                'status'            => 'selesai',  // Sudah dikonfirmasi pengelola
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
+            [
+                'id_instruksi'      => 2,
+                'id_detail'         => 2,   // Ciherang milik Slamet (13.5 kg)
+                'id_slot'           => 2,   // Slot A2 - Lumbung Desa A
+                'jumlah'            => 13.50,
+                'tanggal_instruksi' => '2025-03-11',
+                'status'            => 'selesai',  // Sudah dikonfirmasi pengelola
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
+            [
+                'id_instruksi'      => 3,
+                'id_detail'         => 3,   // Ciherang milik Nurhayati (18 kg)
+                'id_slot'           => 3,   // Slot B1 - Lumbung Pusat
+                'jumlah'            => 18.00,
+                'tanggal_instruksi' => '2025-03-13',
+                'status'            => 'selesai',  // Sudah dikonfirmasi pengelola
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
+            [
+                'id_instruksi'      => 4,
+                'id_detail'         => 4,   // Mekongga milik Bambang (30 kg)
+                'id_slot'           => 3,   // Slot B1 - Lumbung Pusat
+                'jumlah'            => 30.00,
+                'tanggal_instruksi' => '2025-03-16',
+                'status'            => 'pending',  // Belum dikonfirmasi pengelola
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
+        ]);
+
+        // =====================================================================
+        // 11. PENYIMPANAN GABAH
+        // HANYA dibuat setelah pengelola konfirmasi instruksi.
+        // Data ini menandakan gabah sudah FISIK masuk ke lumbung.
+        //
+        // Kolom penting:
+        // - id_instruksi: Link ke instruksi asal (untuk tracking)
+        // - jumlah_masuk: Jumlah original saat masuk (TIDAK BERUBAH)
+        // - jumlah: Current stock (BERUBAH saat pengambilan)
         // =====================================================================
         DB::table('penyimpanan_gabah')->insert([
             [
                 'id_penyimpanan' => 1,
+                'id_instruksi'   => 1,   // Link ke instruksi #1
                 'id_detail'      => 1,   // IR64 milik Slamet
                 'id_slot'        => 1,   // Slot A1 - Lumbung Desa A
-                'jumlah'         => 800,
+                'jumlah_masuk'   => 24,  // Original amount (dari instruksi.jumlah)
+                'jumlah'         => 24,  // Current stock (awalnya sama dengan jumlah_masuk)
                 'tanggal_masuk'  => '2025-03-11',
                 'status'         => 'tersimpan',
                 'created_at'     => now(),
@@ -239,48 +313,37 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id_penyimpanan' => 2,
+                'id_instruksi'   => 2,   // Link ke instruksi #2
+                'id_detail'      => 2,   // Ciherang milik Slamet
+                'id_slot'        => 2,   // Slot A2 - Lumbung Desa A
+                'jumlah_masuk'   => 13.5, // Original amount
+                'jumlah'         => 13.5, // Current stock
+                'tanggal_masuk'  => '2025-03-11',
+                'status'         => 'tersimpan',
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ],
+            [
+                'id_penyimpanan' => 3,
+                'id_instruksi'   => 3,   // Link ke instruksi #3
                 'id_detail'      => 3,   // Ciherang milik Nurhayati
                 'id_slot'        => 3,   // Slot B1 - Lumbung Pusat
-                'jumlah'         => 600,
+                'jumlah_masuk'   => 18,  // Original amount
+                'jumlah'         => 18,  // Current stock
                 'tanggal_masuk'  => '2025-03-13',
                 'status'         => 'tersimpan',
                 'created_at'     => now(),
                 'updated_at'     => now(),
             ],
+            // Mekongga Bambang BELUM ada karena instruksinya masih pending
         ]);
 
-        // Update: sebagian gabah Slamet sudah pernah diambil (300 kg),
-        // sisa stok menjadi 500 kg
+        // Update: sebagian gabah Slamet (IR64) sudah pernah diambil (10 kg dari 24 kg),
+        // sisa stok menjadi 14 kg
+        // PERHATIKAN: jumlah_masuk tetap 24 kg (tidak berubah), hanya jumlah yang berubah
         DB::table('penyimpanan_gabah')
             ->where('id_penyimpanan', 1)
-            ->update(['jumlah' => 500]);
-
-        // =====================================================================
-        // 11. INSTRUKSI PENYIMPANAN
-        // Instruksi yang dikirim sistem ke pengelola.
-        // =====================================================================
-        DB::table('instruksi_penyimpanan')->insert([
-            [
-                'id_instruksi'      => 1,
-                'id_detail'         => 2,   // Ciherang milik Slamet (13.5 kg)
-                'id_slot'           => 2,   // Slot A2 - Lumbung Desa A
-                'jumlah'            => 13.50,
-                'tanggal_instruksi' => '2025-03-12',
-                'status'            => 'selesai',
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-            [
-                'id_instruksi'      => 2,
-                'id_detail'         => 4,   // Mekongga milik Bambang (30 kg)
-                'id_slot'           => 3,   // Slot B1 - Lumbung Pusat
-                'jumlah'            => 30.00,
-                'tanggal_instruksi' => '2025-03-16',
-                'status'            => 'pending',
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-        ]);
+            ->update(['jumlah' => 14]);
 
         // =====================================================================
         // 12. PERMINTAAN PENGAMBILAN
@@ -291,16 +354,16 @@ class DatabaseSeeder extends Seeder
                 'id_petani'          => 1,   // Slamet
                 'id_penyimpanan'     => 1,   // IR64 di slot A1
                 'tanggal_permintaan' => '2025-04-01',
-                'status'             => 'disetujui',
+                'status'             => 'selesai',  // Sudah selesai diambil
                 'created_at'         => now(),
                 'updated_at'         => now(),
             ],
             [
                 'id_permintaan'      => 2,
                 'id_petani'          => 2,   // Nurhayati
-                'id_penyimpanan'     => 2,   // Ciherang di slot B1
+                'id_penyimpanan'     => 3,   // Ciherang di slot B1
                 'tanggal_permintaan' => '2025-04-05',
-                'status'             => 'pending',
+                'status'             => 'pending',  // Masih menunggu persetujuan
                 'created_at'         => now(),
                 'updated_at'         => now(),
             ],
@@ -308,14 +371,24 @@ class DatabaseSeeder extends Seeder
 
         // =====================================================================
         // 13. DETAIL PENGAMBILAN
+        // Petani hanya bisa mengambil dari 3% yang mereka setor ke lumbung.
         // =====================================================================
         DB::table('detail_pengambilan')->insert([
             [
                 'id_detail_ambil' => 1,
                 'id_permintaan'   => 1,
                 'id_penyimpanan'  => 1,
-                'jumlah'          => 300,
+                'jumlah'          => 10,  // Slamet ambil 10 kg dari 24 kg yang disetor
                 'alasan'          => 'Kebutuhan konsumsi rumah tangga',
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ],
+            [
+                'id_detail_ambil' => 2,
+                'id_permintaan'   => 2,
+                'id_penyimpanan'  => 3,
+                'jumlah'          => 5,   // Nurhayati minta ambil 5 kg dari 18 kg yang disetor
+                'alasan'          => 'Dijual ke pasar',
                 'created_at'      => now(),
                 'updated_at'      => now(),
             ],
@@ -449,9 +522,33 @@ class DatabaseSeeder extends Seeder
                 'updated_at'   => now(),
             ],
 
-            // Admin - Admin Utama
+            // Pengelola 3 - Rina Wijaya (HANYA akses Lumbung Pusat untuk test filtering)
             [
                 'id_login'     => 9,
+                'id_petani'    => null,
+                'id_pengelola' => 3,
+                'id_admin'     => null,
+                'username'     => 'pengelola.rina',
+                'password'     => Hash::make('rahasia123', ['memory' => 65536, 'time' => 4, 'threads' => 1]),
+                'role'         => 'pengelola',
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ],
+            [
+                'id_login'     => 10,
+                'id_petani'    => null,
+                'id_pengelola' => 3,
+                'id_admin'     => null,
+                'username'     => 'rina.wijaya@desa.local',
+                'password'     => Hash::make('rahasia123', ['memory' => 65536, 'time' => 4, 'threads' => 1]),
+                'role'         => 'pengelola',
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ],
+
+            // Admin - Admin Utama
+            [
+                'id_login'     => 11,
                 'id_petani'    => null,
                 'id_pengelola' => null,
                 'id_admin'     => 1,
@@ -462,7 +559,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at'   => now(),
             ],
             [
-                'id_login'     => 10,
+                'id_login'     => 12,
                 'id_petani'    => null,
                 'id_pengelola' => null,
                 'id_admin'     => 1,

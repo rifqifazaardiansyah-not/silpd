@@ -42,8 +42,16 @@ class DashboardController extends Controller
             ->where('status', 'tersimpan')
             ->with('detailPanen.jenisGabah')
             ->get()
-            ->groupBy(fn ($item) => $item->detailPanen->jenisGabah->nama_jenis)
-            ->map(fn ($group) => $group->sum('jumlah'));
+            ->groupBy('detailPanen.id_jenis_gabah')
+            ->map(function ($group) {
+                $jenisGabah = $group->first()->detailPanen->jenisGabah;
+                return (object) [
+                    'nama_jenis'  => $jenisGabah->nama_jenis,
+                    'total_stok'  => $group->sum('jumlah'),
+                    'jumlah_lot'  => $group->count(),
+                ];
+            })
+            ->values();
 
         // Permintaan pengambilan terbaru (5 terakhir)
         $permintaanTerbaru = PermintaanPengambilan::where('id_petani', $idPetani)

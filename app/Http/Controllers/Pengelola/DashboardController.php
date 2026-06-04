@@ -27,8 +27,10 @@ class DashboardController extends Controller
     {
         $idPengelola = session('ref_id');
 
-        // Lumbung yang dikelola oleh pengelola ini
-        $lumbungList = Lumbung::where('id_pengelola', $idPengelola)
+        // Lumbung yang dikelola oleh pengelola ini (many-to-many)
+        $lumbungList = Lumbung::whereHas('pengelola', function($q) use ($idPengelola) {
+                $q->where('pengelola.id_pengelola', $idPengelola);
+            })
             ->with('slotLumbung')
             ->get();
 
@@ -55,7 +57,12 @@ class DashboardController extends Controller
                 $q->whereIn('id_slot', $slotIds);
             })
             ->where('status', 'disetujui')
-            ->with(['petani', 'penyimpananGabah.slotLumbung'])
+            ->with([
+                'petani', 
+                'penyimpananGabah.slotLumbung.lumbung',
+                'penyimpananGabah.detailPanen.jenisGabah',
+                'detailPengambilan'
+            ])
             ->orderBy('tanggal_permintaan')
             ->take(5)
             ->get();
@@ -92,11 +99,11 @@ class DashboardController extends Controller
                 ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
                 : 0;
 
-            return [
-                'lumbung'         => $lumbung,
-                'total_kapasitas' => $totalKapasitas,
+            return (object) [
+                'nama_lumbung'    => $lumbung->nama_lumbung,
+                'total_stok'      => $totalTerpakai,
+                'kapasitas_total' => $totalKapasitas,
                 'total_tersedia'  => $totalTersedia,
-                'total_terpakai'  => $totalTerpakai,
                 'persen_terpakai' => $persenTerpakai,
             ];
         });

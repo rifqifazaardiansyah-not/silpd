@@ -47,8 +47,14 @@ class PengeluaranGabahController extends Controller
             })
             ->where('status', 'disetujui')
             ->count();
+            
+        $jumlahSelesai = PermintaanPengambilan::whereHas('penyimpananGabah.slotLumbung', function ($q) use ($slotIds) {
+                $q->whereIn('id_slot', $slotIds);
+            })
+            ->where('status', 'selesai')
+            ->count();
 
-        return view('pengelola.pengeluaran.index', compact('permintaanList', 'jumlahMenunggu', 'statusFilter'));
+        return view('pengelola.pengeluaran.index', compact('permintaanList', 'jumlahMenunggu', 'jumlahSelesai', 'statusFilter'));
     }
 
     /**
@@ -93,7 +99,7 @@ class PengeluaranGabahController extends Controller
                 $q->whereIn('id_slot', $slotIds);
             })
             ->where('status', 'disetujui')
-            ->with(['penyimpananGabah.slotLumbung', 'detailPengambilan'])
+            ->with(['detailPengambilan'])
             ->findOrFail($id);
 
         $request->validate([
@@ -111,31 +117,47 @@ class PengeluaranGabahController extends Controller
             return back()->withErrors(['konfirmasi' => 'Tidak ada detail pengambilan. Hubungi admin.']);
         }
 
-        $penyimpanan = $permintaan->penyimpananGabah;
-        $slot        = $penyimpanan->slotLumbung;
+        try {
+            DB::transaction(function () use ($permintaan, $totalKeluar) {
+                // Lock penyimpanan dan slot untuk mencegah race condition
+                $penyimpanan = PenyimpananGabah::where('id_penyimpanan', $permintaan->id_penyimpanan)
+                    ->lockForUpdate()
+                    ->first();
 
-        // Validasi stok masih mencukupi
-        if ($penyimpanan->jumlah < $totalKeluar) {
-            return back()->withErrors([
-                'konfirmasi' => "Stok gabah tidak mencukupi. Tersedia: {$penyimpanan->jumlah} kg, diminta: {$totalKeluar} kg.",
-            ]);
+                if (!$penyimpanan) {
+                    throw new \Exception('Data penyimpanan gabah tidak ditemukan.');
+                }
+
+                $slot = SlotLumbung::where('id_slot', $penyimpanan->id_slot)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$slot) {
+                    throw new \Exception('Data slot lumbung tidak ditemukan.');
+                }
+
+                // Validasi stok DALAM transaction setelah lock
+                if ($penyimpanan->jumlah < $totalKeluar) {
+                    throw new \Exception("Stok gabah tidak mencukupi. Tersedia: {$penyimpanan->jumlah} kg, diminta: {$totalKeluar} kg.");
+                }
+
+                $sisaGabah = $penyimpanan->jumlah - $totalKeluar;
+
+                // 1. Update jumlah penyimpanan gabah
+                $penyimpanan->update([
+                    'jumlah' => $sisaGabah,
+                    'status' => $sisaGabah <= 0 ? 'habis' : 'tersimpan',
+                ]);
+
+                // 2. Kembalikan kapasitas slot
+                $slot->increment('kapasitas_tersedia', $totalKeluar);
+
+                // 3. Update status permintaan menjadi selesai
+                $permintaan->update(['status' => 'selesai']);
+            });
+        } catch (\Exception $e) {
+            return back()->withErrors(['konfirmasi' => $e->getMessage()]);
         }
-
-        DB::transaction(function () use ($permintaan, $penyimpanan, $slot, $totalKeluar) {
-            $sisaGabah = $penyimpanan->jumlah - $totalKeluar;
-
-            // 1. Update jumlah penyimpanan gabah
-            $penyimpanan->update([
-                'jumlah' => $sisaGabah,
-                'status' => $sisaGabah <= 0 ? 'habis' : 'tersimpan',
-            ]);
-
-            // 2. Kembalikan kapasitas slot
-            $slot->increment('kapasitas_tersedia', $totalKeluar);
-
-            // 3. Update status permintaan menjadi selesai
-            $permintaan->update(['status' => 'selesai']);
-        });
 
         return redirect()
             ->route('pengelola.pengeluaran.index')
@@ -148,7 +170,9 @@ class PengeluaranGabahController extends Controller
 
     private function getSlotIdsPengelola(int $idPengelola): \Illuminate\Support\Collection
     {
-        $idLumbungList = Lumbung::where('id_pengelola', $idPengelola)->pluck('id_lumbung');
+        $idLumbungList = Lumbung::whereHas('pengelola', function($q) use ($idPengelola) {
+            $q->where('pengelola.id_pengelola', $idPengelola);
+        })->pluck('id_lumbung');
 
         return SlotLumbung::whereIn('id_lumbung', $idLumbungList)->pluck('id_slot');
     }

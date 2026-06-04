@@ -10,6 +10,8 @@ class DetailPanen extends Model
 {
     protected $table = 'detail_panen';
     protected $primaryKey = 'id_detail';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [

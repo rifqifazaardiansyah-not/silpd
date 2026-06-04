@@ -10,6 +10,8 @@ class SlotLumbung extends Model
 {
     protected $table = 'slot_lumbung';
     protected $primaryKey = 'id_slot';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [

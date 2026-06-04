@@ -9,6 +9,8 @@ class Login extends Model
 {
     protected $table = 'login';
     protected $primaryKey = 'id_login';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [

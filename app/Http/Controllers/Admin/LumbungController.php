@@ -56,15 +56,34 @@ class LumbungController extends Controller
     {
         $request->validate([
             'nama_lumbung' => ['required', 'string', 'max:100', 'unique:lumbung,nama_lumbung'],
-            'id_pengelola' => ['required', 'integer', 'exists:pengelola,id_pengelola'],
+            'pengelola'    => ['nullable', 'array'],
+            'pengelola.*.checked' => ['nullable'],
+            'pengelola.*.peran'   => ['nullable', 'in:pemilik_akun,anggota'],
         ], [
             'nama_lumbung.required' => 'Nama lumbung wajib diisi.',
             'nama_lumbung.unique'   => 'Nama lumbung sudah terdaftar.',
-            'id_pengelola.required' => 'Pengelola wajib dipilih.',
-            'id_pengelola.exists'   => 'Pengelola tidak ditemukan.',
         ]);
 
-        Lumbung::create($request->only('nama_lumbung', 'id_pengelola'));
+        // Buat lumbung
+        $lumbung = Lumbung::create(['nama_lumbung' => $request->nama_lumbung]);
+
+        // Attach pengelola ke lumbung via pivot table
+        if ($request->filled('pengelola')) {
+            $pengelolaData = [];
+            foreach ($request->pengelola as $idPengelola => $data) {
+                if (isset($data['checked']) && $data['checked']) {
+                    $pengelolaData[$idPengelola] = [
+                        'peran' => $data['peran'] ?? 'anggota',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+            
+            if (!empty($pengelolaData)) {
+                $lumbung->pengelola()->attach($pengelolaData);
+            }
+        }
 
         return redirect()
             ->route('admin.lumbung.index')
@@ -91,12 +110,48 @@ class LumbungController extends Controller
             ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
             : 0;
 
+        // Notifikasi slot hampir penuh (kapasitas tersedia < 20%)
+        $thresholdKapasitas = 20;
+        $slotHampirPenuh = $lumbung->slotLumbung->filter(function($slot) use ($thresholdKapasitas) {
+            $persenTersedia = $slot->kapasitas > 0 
+                ? ($slot->kapasitas_tersedia / $slot->kapasitas) * 100 
+                : 0;
+            return $persenTersedia < $thresholdKapasitas;
+        });
+
+        // Notifikasi gabah kadaluarsa (> 90 hari)
+        $batasHari = config('silpd.batas_hari_simpan', 90);
+        $batasDate = \Carbon\Carbon::now()->subDays($batasHari);
+        
+        $gabahKadaluarsa = collect();
+        foreach ($lumbung->slotLumbung as $slot) {
+            foreach ($slot->penyimpananGabah as $penyimpanan) {
+                if ($penyimpanan->status === 'tersimpan' && 
+                    \Carbon\Carbon::parse($penyimpanan->tanggal_masuk)->lte($batasDate)) {
+                    $gabahKadaluarsa->push($penyimpanan);
+                }
+            }
+        }
+
+        // Daftar stok gabah (untuk tabel di bawah)
+        $stokList = collect();
+        foreach ($lumbung->slotLumbung as $slot) {
+            foreach ($slot->penyimpananGabah as $penyimpanan) {
+                if ($penyimpanan->status === 'tersimpan') {
+                    $stokList->push($penyimpanan);
+                }
+            }
+        }
+
         return view('admin.lumbung.show', compact(
             'lumbung',
             'totalKapasitas',
             'totalTersedia',
             'totalTerpakai',
             'persenTerpakai',
+            'slotHampirPenuh',
+            'gabahKadaluarsa',
+            'stokList',
         ));
     }
 
@@ -123,14 +178,34 @@ class LumbungController extends Controller
                 'required', 'string', 'max:100',
                 'unique:lumbung,nama_lumbung,' . $id . ',id_lumbung',
             ],
-            'id_pengelola' => ['required', 'integer', 'exists:pengelola,id_pengelola'],
+            'pengelola'    => ['nullable', 'array'],
+            'pengelola.*.checked' => ['nullable'],
+            'pengelola.*.peran'   => ['nullable', 'in:pemilik_akun,anggota'],
         ], [
             'nama_lumbung.required' => 'Nama lumbung wajib diisi.',
             'nama_lumbung.unique'   => 'Nama lumbung sudah digunakan.',
-            'id_pengelola.required' => 'Pengelola wajib dipilih.',
         ]);
 
-        $lumbung->update($request->only('nama_lumbung', 'id_pengelola'));
+        // Update nama lumbung
+        $lumbung->update(['nama_lumbung' => $request->nama_lumbung]);
+
+        // Sync pengelola (update relasi many-to-many)
+        if ($request->filled('pengelola')) {
+            $pengelolaData = [];
+            foreach ($request->pengelola as $idPengelola => $data) {
+                if (isset($data['checked']) && $data['checked']) {
+                    $pengelolaData[$idPengelola] = [
+                        'peran' => $data['peran'] ?? 'anggota',
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+            
+            $lumbung->pengelola()->sync($pengelolaData);
+        } else {
+            // Jika tidak ada pengelola yang dipilih, hapus semua relasi
+            $lumbung->pengelola()->detach();
+        }
 
         return redirect()
             ->route('admin.lumbung.show', $id)

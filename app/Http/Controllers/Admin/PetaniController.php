@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KelompokTani;
+use App\Models\Panen;
 use App\Models\Petani;
 use App\Models\PenyimpananGabah;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class PetaniController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Petani::with('kelompokTani')->withCount('panenList');
+        $query = Petani::with('kelompokTani')->withCount('panen');
 
         if ($request->filled('search')) {
             $query->where('nama_petani', 'like', '%' . $request->search . '%');
@@ -70,13 +71,9 @@ class PetaniController extends Controller
      */
     public function show(int $id)
     {
-        $petani = Petani::with([
-            'kelompokTani',
-            'panenList.detailPanen.jenisGabah',
-            'login',
-        ])
-        ->withCount('panenList')
-        ->findOrFail($id);
+        $petani = Petani::with('kelompokTani', 'login')
+            ->withCount('panen')
+            ->findOrFail($id);
 
         // Stok gabah aktif milik petani ini
         $stokAktif = PenyimpananGabah::whereHas('detailPanen.panen', function ($q) use ($id) {
@@ -92,7 +89,13 @@ class PetaniController extends Controller
 
         $totalStok = $stokAktif->sum('jumlah');
 
-        return view('admin.petani.show', compact('petani', 'stokAktif', 'totalStok'));
+        // Riwayat panen dengan pagination
+        $riwayatPanen = Panen::where('id_petani', $id)
+            ->with('detailPanen.jenisGabah')
+            ->orderBy('tanggal_panen', 'desc')
+            ->paginate(10);
+
+        return view('admin.petani.show', compact('petani', 'stokAktif', 'totalStok', 'riwayatPanen'));
     }
 
     /**
@@ -136,9 +139,9 @@ class PetaniController extends Controller
      */
     public function destroy(int $id)
     {
-        $petani = Petani::withCount('panenList')->findOrFail($id);
+        $petani = Petani::withCount('panen')->findOrFail($id);
 
-        if ($petani->panen_list_count > 0) {
+        if ($petani->panen_count > 0) {
             return back()->withErrors([
                 'hapus' => "Petani \"{$petani->nama_petani}\" tidak dapat dihapus karena sudah memiliki riwayat panen.",
             ]);

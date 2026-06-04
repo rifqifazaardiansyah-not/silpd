@@ -101,7 +101,7 @@
         </li>
 
         <li class="nav-item mt-3">
-            <span class="nav-link text-uppercase small text-muted" style="cursor: default;">
+            <span class="nav-link text-uppercase small text-muted" style="cursor: default; background-color: rgba(255,255,255,0.08); border-radius: 4px;">
                 <i class="fas fa-chart-bar"></i> Laporan
             </span>
         </li>

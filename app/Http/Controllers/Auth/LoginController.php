@@ -77,10 +77,10 @@ class LoginController extends Controller
 
         // Simpan ke session
         session([
+            'login_id' => $login->id_login,
             'role' => $role,
             'ref_id' => $refId,
-            'name' => $user->nama_petani ?? $user->nama_pengelola ?? $user->nama_admin ?? $input,
-            'username' => $input,
+            'nama' => $user->nama_petani ?? $user->nama_pengelola ?? $user->nama_admin ?? $input,
         ]);
 
         // Redirect ke dashboard sesuai role

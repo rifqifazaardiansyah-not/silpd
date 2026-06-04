@@ -219,11 +219,13 @@ class PanenController extends Controller
             $instruksi      = $detail->instruksiPenyimpanan->first();
             $penyimpanan    = $detail->penyimpananGabah->first();
 
-            return [
-                'detail'              => $detail,
+            return (object)[
+                'id_detail'           => $detail->id_detail,
+                'jenisGabah'          => $detail->jenisGabah,
+                'jumlah_panen'        => $detail->jumlah_panen,
                 'jumlah_lumbung'      => $jumlahLumbung,
-                'instruksi'           => $instruksi,
-                'penyimpanan'         => $penyimpanan,
+                'instruksiPenyimpanan' => $detail->instruksiPenyimpanan,
+                'penyimpananGabah'    => $detail->penyimpananGabah,
                 'status_instruksi'    => $instruksi?->status ?? 'belum_dibuat',
                 'ada_instruksi'       => ! is_null($instruksi),
                 'sudah_disimpan'      => ! is_null($penyimpanan),

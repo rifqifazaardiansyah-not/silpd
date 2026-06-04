@@ -12,6 +12,7 @@ use App\Models\PermintaanPengambilan;
 use App\Models\PenyimpananGabah;
 use App\Models\SlotLumbung;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -96,7 +97,11 @@ class DashboardController extends Controller
         $stokPerJenis = PenyimpananGabah::where('status', 'tersimpan')
             ->join('detail_panen', 'penyimpanan_gabah.id_detail', '=', 'detail_panen.id_detail')
             ->join('jenis_gabah', 'detail_panen.id_jenis_gabah', '=', 'jenis_gabah.id_jenis_gabah')
-            ->selectRaw('jenis_gabah.nama_jenis, SUM(penyimpanan_gabah.jumlah) as total_stok')
+            ->select(
+                'jenis_gabah.nama_jenis',
+                DB::raw('SUM(penyimpanan_gabah.jumlah) as total_stok'),
+                DB::raw('COUNT(penyimpanan_gabah.id_penyimpanan) as jumlah_lot')
+            )
             ->groupBy('jenis_gabah.id_jenis_gabah', 'jenis_gabah.nama_jenis')
             ->orderByDesc('total_stok')
             ->get();
@@ -123,20 +128,46 @@ class DashboardController extends Controller
             ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
             : 0;
 
+        // ── Ringkasan kapasitas per lumbung ──────────────────────────────────
+        $ringkasanLumbung = Lumbung::with('slotLumbung')
+            ->get()
+            ->map(function ($lumbung) {
+                $totalKapasitas = $lumbung->slotLumbung->sum('kapasitas');
+                $totalTersedia  = $lumbung->slotLumbung->sum('kapasitas_tersedia');
+                $totalTerpakai  = $totalKapasitas - $totalTersedia;
+                $persenTerpakai = $totalKapasitas > 0
+                    ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
+                    : 0;
+
+                return (object) [
+                    'nama_lumbung'   => $lumbung->nama_lumbung,
+                    'persenTerpakai' => $persenTerpakai,
+                ];
+            });
+
+        // Alias untuk konsistensi dengan view
+        $totalStokAktif = $totalGabahTersimpan;
+        $panenBulanIni = $totalPanenBulanIni;
+        $jumlahPermintaanPending = $jumlahPending;
+
         return view('admin.dashboard', compact(
             'totalPetani',
             'totalLumbung',
             'totalSlot',
             'totalPanenBulanIni',
+            'panenBulanIni',
             'totalGabahTersimpan',
+            'totalStokAktif',
             'permintaanPending',
             'jumlahPending',
+            'jumlahPermintaanPending',
             'instruksiPending',
             'jumlahInstruksiPending',
             'slotHampirPenuh',
             'gabahKadaluarsa',
             'jumlahGabahKadaluarsa',
             'stokPerJenis',
+            'ringkasanLumbung',
             'grafikPanen',
             'totalKapasitas',
             'totalTersedia',

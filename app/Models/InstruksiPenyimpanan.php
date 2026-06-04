@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class InstruksiPenyimpanan extends Model
 {
     protected $table = 'instruksi_penyimpanan';
     protected $primaryKey = 'id_instruksi';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [
@@ -42,5 +45,16 @@ class InstruksiPenyimpanan extends Model
     public function slotLumbung(): BelongsTo
     {
         return $this->belongsTo(SlotLumbung::class, 'id_slot', 'id_slot');
+    }
+
+    /**
+     * Hubungan: InstruksiPenyimpanan has one PenyimpananGabah
+     * Satu instruksi hanya menghasilkan satu penyimpanan (one-to-one)
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function penyimpananGabah()
+    {
+        return $this->hasOne(PenyimpananGabah::class, 'id_instruksi', 'id_instruksi');
     }
 }

@@ -52,9 +52,11 @@ class LaporanController extends Controller
             $queryStok->whereHas('detailPanen', fn ($q) => $q->where('id_jenis_gabah', $request->id_jenis_gabah));
         }
 
-        // Filter berdasarkan petani
-        if ($request->filled('id_petani')) {
-            $queryStok->whereHas('detailPanen.panen', fn ($q) => $q->where('id_petani', $request->id_petani));
+        // Filter berdasarkan petani (pencarian nama)
+        if ($request->filled('search_petani')) {
+            $queryStok->whereHas('detailPanen.panen.petani', function ($q) use ($request) {
+                $q->where('nama_petani', 'like', '%' . $request->search_petani . '%');
+            });
         }
 
         // Filter: tampilkan hanya yang kadaluarsa
@@ -78,14 +80,14 @@ class LaporanController extends Controller
             $totalTersedia  = $lumbung->slotLumbung->sum('kapasitas_tersedia');
             $totalTerpakai  = $totalKapasitas - $totalTersedia;
 
-            return [
-                'nama_lumbung'    => $lumbung->nama_lumbung,
-                'total_kapasitas' => $totalKapasitas,
-                'total_terpakai'  => $totalTerpakai,
-                'total_tersedia'  => $totalTersedia,
-                'persen_terpakai' => $totalKapasitas > 0
+            return (object) [
+                'nama_lumbung'      => $lumbung->nama_lumbung,
+                'total_stok'        => $totalTerpakai,
+                'kapasitas_total'   => $totalKapasitas,
+                'kapasitas_tersedia'=> $totalTersedia,
+                'persen_terpakai'   => $totalKapasitas > 0
                     ? round(($totalTerpakai / $totalKapasitas) * 100, 1) : 0,
-                'jumlah_lot'      => PenyimpananGabah::whereIn('id_slot', $slotIds)
+                'jumlah_lot'        => PenyimpananGabah::whereIn('id_slot', $slotIds)
                     ->where('status', 'tersimpan')->count(),
             ];
         });
@@ -95,11 +97,12 @@ class LaporanController extends Controller
             ->with('detailPanen.jenisGabah')
             ->get()
             ->groupBy(fn ($item) => $item->detailPanen->jenisGabah->nama_jenis)
-            ->map(fn ($group) => [
-                'total'      => $group->sum('jumlah'),
+            ->map(fn ($group, $namaJenis) => (object) [
+                'nama_jenis' => $namaJenis,
+                'total_stok' => $group->sum('jumlah'),
                 'jumlah_lot' => $group->count(),
             ])
-            ->sortByDesc('total');
+            ->sortByDesc('total_stok');
 
         $totalStokKeseluruhan = PenyimpananGabah::where('status', 'tersimpan')->sum('jumlah');
         $jumlahKadaluarsa     = PenyimpananGabah::where('status', 'tersimpan')
@@ -138,9 +141,9 @@ class LaporanController extends Controller
      */
     public function panen(Request $request)
     {
-        // Default rentang: bulan berjalan
-        $dari    = $request->filled('dari') ? $request->dari : Carbon::now()->startOfMonth()->format('Y-m-d');
-        $sampai  = $request->filled('sampai') ? $request->sampai : Carbon::now()->endOfMonth()->format('Y-m-d');
+        // Default rentang: Maret 2025 (sesuai data seeder)
+        $dari    = $request->filled('dari') ? $request->dari : '2025-03-01';
+        $sampai  = $request->filled('sampai') ? $request->sampai : '2025-03-31';
 
         $queryPanen = Panen::with([
             'petani.kelompokTani',
@@ -197,11 +200,15 @@ class LaporanController extends Controller
             ->whereBetween('tanggal_panen', [$dari, $sampai])
             ->get()
             ->groupBy(fn ($p) => $p->petani->kelompokTani->nama_kelompok)
-            ->map(fn ($group) => [
-                'jumlah_petani' => $group->pluck('id_petani')->unique()->count(),
-                'jumlah_panen'  => $group->count(),
-                'total_panen'   => $group->flatMap->detailPanen->sum('jumlah_panen'),
-            ])
+            ->map(function ($group) use ($persenLumbung) {
+                $totalPanen = $group->flatMap->detailPanen->sum('jumlah_panen');
+                return [
+                    'jumlah_petani' => $group->pluck('id_petani')->unique()->count(),
+                    'jumlah_panen'  => $group->count(),
+                    'total_panen'   => $totalPanen,
+                    'total_lumbung' => round($totalPanen * ($persenLumbung / 100), 2),
+                ];
+            })
             ->sortByDesc('total_panen');
 
         // Tren panen harian dalam rentang periode (untuk grafik)

@@ -1,6 +1,10 @@
 <?php
 
-
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin;
+use App\Http\Controllers\Pengelola;
+use App\Http\Controllers\Petani;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,197 +17,114 @@
 |
 */
 
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\PanenController;
-use App\Http\Controllers\Admin\AkunController;
-use App\Http\Controllers\Admin\PetaniController;
-use App\Http\Controllers\Admin\KelompokTaniController;
-use App\Http\Controllers\Admin\JenisGabahController;
-use App\Http\Controllers\Admin\LumbungController;
-use App\Http\Controllers\Admin\SlotLumbungController;
-use App\Http\Controllers\Admin\PengelolaController;
-use App\Http\Controllers\Admin\InstruksiController;
-use App\Http\Controllers\Admin\PermintaanController as AdminPermintaanController;
-use App\Http\Controllers\Admin\LaporanController;
-use App\Http\Controllers\Pengelola\DashboardController as PengelolaDashboardController;
-use App\Http\Controllers\Pengelola\InstruksiPenyimpananController;
-use App\Http\Controllers\Pengelola\StokController as PengelolaStokController;
-use App\Http\Controllers\Pengelola\PengeluaranGabahController;
-use App\Http\Controllers\Petani\DashboardController as PetaniDashboardController;
-use App\Http\Controllers\Petani\StokController as PetaniStokController;
-use App\Http\Controllers\Petani\PermintaanController as PetaniPermintaanController;
-use Illuminate\Support\Facades\Route;
-// Halaman Awal
-Route::get('/', function () {
-    return view('welcome');
+// Auth routes (tanpa middleware)
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Debug routes (hapus setelah selesai debugging)
+Route::prefix('debug')->group(function () {
+    Route::get('/check-login', [\App\Http\Controllers\DebugController::class, 'checkLogin']);
+    Route::post('/check-password', [\App\Http\Controllers\DebugController::class, 'checkPassword']);
+    Route::get('/check-session', [\App\Http\Controllers\DebugController::class, 'checkSession']);
+    Route::get('/all-logins', [\App\Http\Controllers\DebugController::class, 'allLogins']);
 });
 
-// ===== LOGIN & LOGOUT =====
-Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])
-    ->middleware('guest')
-    ->name('login');
-Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login.post');
-Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
-
-// ===== ADMIN ROUTES =====
-Route::middleware(['ensure_login', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+// Admin routes - middleware role:admin
+Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
-    // Manajemen Panen
-    Route::resource('panen', PanenController::class)->names([
-        'index' => 'panen.index',
-        'create' => 'panen.create',
-        'store' => 'panen.store',
-        'show' => 'panen.show',
-        'edit' => 'panen.edit',
-        'update' => 'panen.update',
-        'destroy' => 'panen.destroy',
-    ]);
-    Route::get('panen/{id}/form-instruksi-manual/{idDetail}', [PanenController::class, 'formInstruksiManual'])->name('panen.form-instruksi');
-    Route::post('panen/instruksi-manual', [PanenController::class, 'buatInstruksiManual'])->name('panen.buat-instruksi');
-    Route::post('panen/batal-instruksi/{idInstruksi}', [PanenController::class, 'batalInstruksi'])->name('panen.batal-instruksi');
+    // Petani
+    Route::resource('petani', Admin\PetaniController::class)->parameters(['petani' => 'id']);
+    Route::get('petani/{id}', [Admin\PetaniController::class, 'show'])->name('petani.show');
 
-    // Manajemen Akun
-    Route::resource('akun', AkunController::class)->names([
-        'index' => 'akun.index',
-        'create' => 'akun.create',
-        'store' => 'akun.store',
-        'show' => 'akun.show',
-        'edit' => 'akun.edit',
-        'update' => 'akun.update',
-        'destroy' => 'akun.destroy',
-    ]);
+    // Kelompok Tani
+    Route::resource('kelompok', Admin\KelompokTaniController::class)->parameters(['kelompok' => 'id']);
+    Route::get('kelompok/{id}', [Admin\KelompokTaniController::class, 'show'])->name('kelompok.show');
 
-    // Manajemen Petani
-    Route::resource('petani', PetaniController::class)->names([
-        'index' => 'petani.index',
-        'create' => 'petani.create',
-        'store' => 'petani.store',
-        'show' => 'petani.show',
-        'edit' => 'petani.edit',
-        'update' => 'petani.update',
-        'destroy' => 'petani.destroy',
-    ]);
+    // Jenis Gabah
+    Route::resource('jenis-gabah', Admin\JenisGabahController::class)->parameters(['jenis-gabah' => 'id']);
+    Route::get('jenis-gabah/{id}', [Admin\JenisGabahController::class, 'show'])->name('jenis-gabah.show');
 
-    // Manajemen Kelompok Tani
-    Route::resource('kelompok-tani', KelompokTaniController::class)->names([
-        'index' => 'kelompok-tani.index',
-        'create' => 'kelompok-tani.create',
-        'store' => 'kelompok-tani.store',
-        'show' => 'kelompok-tani.show',
-        'edit' => 'kelompok-tani.edit',
-        'update' => 'kelompok-tani.update',
-        'destroy' => 'kelompok-tani.destroy',
-    ]);
+    // Lumbung + Slot (nested resource)
+    Route::resource('lumbung', Admin\LumbungController::class)->parameters(['lumbung' => 'id']);
+    Route::resource('lumbung.slot', Admin\SlotLumbungController::class)->parameters(['lumbung' => 'idLumbung', 'slot' => 'idSlot']);
+    Route::get('lumbung/{idLumbung}/slot/{idSlot}/detail', [Admin\SlotLumbungController::class, 'showSlot'])->name('lumbung.slot.detail');
 
-    // Manajemen Jenis Gabah
-    Route::resource('jenis-gabah', JenisGabahController::class)->names([
-        'index' => 'jenis-gabah.index',
-        'create' => 'jenis-gabah.create',
-        'store' => 'jenis-gabah.store',
-        'show' => 'jenis-gabah.show',
-        'edit' => 'jenis-gabah.edit',
-        'update' => 'jenis-gabah.update',
-        'destroy' => 'jenis-gabah.destroy',
-    ]);
+    // Pengelola
+    Route::resource('pengelola', Admin\PengelolaController::class)->parameters(['pengelola' => 'id']);
+    Route::post('pengelola/{id}/buat-akun', [Admin\PengelolaController::class, 'buatAkun'])->name('pengelola.buat-akun');
+    Route::post('pengelola/{id}/reset-password', [Admin\PengelolaController::class, 'resetPassword'])->name('pengelola.reset-password');
+    Route::delete('pengelola/{id}/hapus-akun', [Admin\PengelolaController::class, 'hapusAkun'])->name('pengelola.hapus-akun');
 
-    // Manajemen Lumbung
-    Route::resource('lumbung', LumbungController::class)->names([
-        'index' => 'lumbung.index',
-        'create' => 'lumbung.create',
-        'store' => 'lumbung.store',
-        'show' => 'lumbung.show',
-        'edit' => 'lumbung.edit',
-        'update' => 'lumbung.update',
-        'destroy' => 'lumbung.destroy',
-    ]);
+    // Akun
+    Route::resource('akun', Admin\AkunController::class)->parameters(['akun' => 'id']);
+    Route::post('akun/{id}/reset-password', [Admin\AkunController::class, 'resetPassword'])->name('akun.reset-password');
+    Route::get('akun/ganti-password', [Admin\AkunController::class, 'formGantiPasswordSendiri'])->name('akun.ganti-password');
+    Route::post('akun/ganti-password', [Admin\AkunController::class, 'gantiPasswordSendiri'])->name('akun.ganti-password.post');
 
-    // Manajemen Slot Lumbung
-    Route::resource('slot-lumbung', SlotLumbungController::class)->names([
-        'index' => 'slot-lumbung.index',
-        'create' => 'slot-lumbung.create',
-        'store' => 'slot-lumbung.store',
-        'show' => 'slot-lumbung.show',
-        'edit' => 'slot-lumbung.edit',
-        'update' => 'slot-lumbung.update',
-        'destroy' => 'slot-lumbung.destroy',
-    ]);
+    // Panen
+    Route::resource('panen', Admin\PanenController::class)->parameters(['panen' => 'id'])->only(['index', 'create', 'store', 'show', 'destroy']);
+    Route::get('panen/detail/{idDetail}/instruksi-manual', [Admin\PanenController::class, 'formInstruksiManual'])->name('panen.instruksi-manual');
+    Route::post('panen/detail/{idDetail}/instruksi-manual', [Admin\PanenController::class, 'buatInstruksiManual'])->name('panen.instruksi-manual.post');
+    Route::delete('panen/instruksi/{idInstruksi}/batal', [Admin\PanenController::class, 'batalInstruksi'])->name('panen.instruksi.batal');
 
-    // Manajemen Pengelola
-    Route::resource('pengelola', PengelolaController::class)->names([
-        'index' => 'pengelola.index',
-        'create' => 'pengelola.create',
-        'store' => 'pengelola.store',
-        'show' => 'pengelola.show',
-        'edit' => 'pengelola.edit',
-        'update' => 'pengelola.update',
-        'destroy' => 'pengelola.destroy',
-    ]);
-
-    // Manajemen Instruksi Penyimpanan
-    Route::resource('instruksi', InstruksiController::class)->names([
-        'index' => 'instruksi.index',
-        'show' => 'instruksi.show',
-    ]);
-
-    // Manajemen Permintaan Pengambilan
-    Route::resource('permintaan', AdminPermintaanController::class)->names([
-        'index' => 'permintaan.index',
-        'show' => 'permintaan.show',
-    ]);
-    Route::post('permintaan/validasi/{id}', [AdminPermintaanController::class, 'validasi'])->name('permintaan.validasi');
-    Route::post('permintaan/tolak/{id}', [AdminPermintaanController::class, 'tolak'])->name('permintaan.tolak');
-
-    // Laporan
-    Route::resource('laporan', LaporanController::class)->names([
-        'index' => 'laporan.index',
-    ]);
-});
-
-// ===== PENGELOLA ROUTES =====
-Route::middleware(['ensure_login', 'role:pengelola'])->prefix('pengelola')->name('pengelola.')->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [PengelolaDashboardController::class, 'index'])->name('dashboard');
-
-    // Instruksi Penyimpanan
-    Route::resource('instruksi', InstruksiPenyimpananController::class)->names([
-        'index' => 'instruksi.index',
-        'show' => 'instruksi.show',
-    ]);
-    Route::post('instruksi/konfirmasi/{id}', [InstruksiPenyimpananController::class, 'konfirmasi'])->name('instruksi.konfirmasi');
-
-    // Stok Lumbung
-    Route::resource('stok', PengelolaStokController::class)->names([
-        'index' => 'stok.index',
-        'show' => 'stok.show',
-    ]);
-
-    // Pengeluaran Gabah
-    Route::resource('pengeluaran', PengeluaranGabahController::class)->names([
-        'index' => 'pengeluaran.index',
-        'show' => 'pengeluaran.show',
-    ]);
-    Route::post('pengeluaran/selesai/{id}', [PengeluaranGabahController::class, 'selesai'])->name('pengeluaran.selesai');
-});
-
-// ===== PETANI ROUTES =====
-Route::middleware(['ensure_login', 'role:petani'])->prefix('petani')->name('petani.')->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [PetaniDashboardController::class, 'index'])->name('dashboard');
-
-    // Stok Gabah Milik Petani
-    Route::resource('stok', PetaniStokController::class)->names([
-        'index' => 'stok.index',
-        'show' => 'stok.show',
-    ]);
+    // Instruksi Penyimpanan (monitoring admin)
+    Route::resource('instruksi', Admin\InstruksiController::class)->parameters(['instruksi' => 'id'])->only(['index', 'show', 'destroy']);
+    Route::get('instruksi/{id}/pindah-slot', [Admin\InstruksiController::class, 'formPindahSlot'])->name('instruksi.pindah-slot');
+    Route::post('instruksi/{id}/pindah-slot', [Admin\InstruksiController::class, 'pindahSlot'])->name('instruksi.pindah-slot.post');
 
     // Permintaan Pengambilan
-    Route::resource('permintaan', PetaniPermintaanController::class)->names([
-        'index' => 'permintaan.index',
-        'create' => 'permintaan.create',
-        'store' => 'permintaan.store',
-        'show' => 'permintaan.show',
-    ]);
-    Route::post('permintaan/batal/{id}', [PetaniPermintaanController::class, 'batal'])->name('permintaan.batal');
+    Route::resource('permintaan', Admin\PermintaanController::class)->parameters(['permintaan' => 'id'])->only(['index', 'show']);
+    Route::post('permintaan/{id}/setujui', [Admin\PermintaanController::class, 'setujui'])->name('permintaan.setujui');
+    Route::post('permintaan/{id}/tolak', [Admin\PermintaanController::class, 'tolak'])->name('permintaan.tolak');
+    Route::post('permintaan/{id}/batal-setujui', [Admin\PermintaanController::class, 'batalSetujui'])->name('permintaan.batal-setujui');
+    Route::post('permintaan/{id}/tolak-setelah-disetujui', [Admin\PermintaanController::class, 'tolakSetelahDisetujui'])->name('permintaan.tolak-setelah-disetujui');
+
+    // Laporan
+    Route::get('laporan/stok', [Admin\LaporanController::class, 'stok'])->name('laporan.stok');
+    Route::get('laporan/panen', [Admin\LaporanController::class, 'panen'])->name('laporan.panen');
+    Route::get('laporan/pengambilan', [Admin\LaporanController::class, 'pengambilan'])->name('laporan.pengambilan');
+    Route::get('laporan/rekap-petani', [Admin\LaporanController::class, 'rekapPetani'])->name('laporan.rekap-petani');
+    Route::get('laporan/ekspor/stok', [Admin\LaporanController::class, 'eksporStokCsv'])->name('laporan.ekspor.stok');
+    Route::get('laporan/ekspor/panen', [Admin\LaporanController::class, 'eksporPanenCsv'])->name('laporan.ekspor.panen');
+});
+
+// Pengelola routes - middleware role:pengelola
+Route::middleware('role:pengelola')->prefix('pengelola')->name('pengelola.')->group(function () {
+    Route::get('/dashboard', [Pengelola\DashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('instruksi', Pengelola\InstruksiPenyimpananController::class)->parameters(['instruksi' => 'id'])->only(['index', 'show']);
+    Route::post('instruksi/{id}/konfirmasi', [Pengelola\InstruksiPenyimpananController::class, 'konfirmasi'])->name('instruksi.konfirmasi');
+
+    Route::resource('pengeluaran', Pengelola\PengeluaranGabahController::class)->parameters(['pengeluaran' => 'id'])->only(['index', 'show']);
+    Route::post('pengeluaran/{id}/konfirmasi', [Pengelola\PengeluaranGabahController::class, 'konfirmasi'])->name('pengeluaran.konfirmasi');
+
+    Route::get('stok', [Pengelola\StokController::class, 'index'])->name('stok.index');
+    Route::get('stok/slot/{idSlot}', [Pengelola\StokController::class, 'showSlot'])->name('stok.slot');
+});
+
+// Petani routes - middleware role:petani
+Route::middleware('role:petani')->prefix('petani')->name('petani.')->group(function () {
+    Route::get('/dashboard', [Petani\DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('stok', [Petani\StokController::class, 'index'])->name('stok.index');
+
+    Route::resource('permintaan', Petani\PermintaanController::class)->parameters(['permintaan' => 'id'])->only(['index', 'create', 'store', 'show']);
+    Route::post('permintaan/{id}/batal', [Petani\PermintaanController::class, 'batal'])->name('permintaan.batal');
+});
+
+// Root redirect
+Route::get('/', function () {
+    if (!session('login_id')) {
+        return redirect()->route('login');
+    }
+
+    return match (session('role')) {
+        'admin' => redirect()->route('admin.dashboard'),
+        'pengelola' => redirect()->route('pengelola.dashboard'),
+        'petani' => redirect()->route('petani.dashboard'),
+        default => redirect()->route('login'),
+    };
 });

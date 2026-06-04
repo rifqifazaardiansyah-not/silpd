@@ -25,7 +25,7 @@ return [
     ],
 
     // ===== PERSENTASE PENYIMPANAN =====
-    'persentase_penyimpanan' => 3, // 3% dari setiap panen disimpan di lumbung
+    'persen_lumbung' => 3, // 3% dari setiap panen disimpan di lumbung
 
     // ===== KONSTANTA GABAH & PENYIMPANAN =====
     'penyimpanan' => [

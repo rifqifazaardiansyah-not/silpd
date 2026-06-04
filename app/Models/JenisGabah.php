@@ -9,6 +9,8 @@ class JenisGabah extends Model
 {
     protected $table = 'jenis_gabah';
     protected $primaryKey = 'id_jenis_gabah';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [

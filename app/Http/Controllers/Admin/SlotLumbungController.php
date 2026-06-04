@@ -112,12 +112,44 @@ class SlotLumbungController extends Controller
             ->orderBy('tanggal_masuk') // FIFO
             ->get();
 
+        // Transform stokList untuk view
+        $gabahTersimpan = $stokList->map(function ($item) {
+            $umur = now()->diffInDays($item->tanggal_masuk);
+            return (object)[
+                'petani' => $item->detailPanen->panen->petani,
+                'jenisGabah' => $item->detailPanen->jenisGabah,
+                'jumlah_gabah' => $item->jumlah,
+                'tanggal_masuk' => $item->tanggal_masuk,
+                'umur_hari' => $umur,
+                'is_kadaluarsa' => $umur > 90, // Kadaluarsa jika > 90 hari
+            ];
+        });
+
+        // Riwayat penyimpanan (removed items)
+        $removedList = PenyimpananGabah::where('id_slot', $idSlot)
+            ->whereIn('status', ['diambil', 'habis'])
+            ->with([
+                'detailPanen.jenisGabah',
+                'detailPanen.panen.petani',
+            ])
+            ->orderBy('tanggal_masuk', 'desc')
+            ->get();
+
+        $riwayatPenyimpanan = $removedList->map(function ($item) {
+            return (object)[
+                'petani' => $item->detailPanen->panen->petani,
+                'jenisGabah' => $item->detailPanen->jenisGabah,
+                'jumlah_gabah' => $item->jumlah,
+                'tanggal_masuk' => $item->tanggal_masuk,
+            ];
+        });
+
         $terpakai       = $slot->kapasitas - $slot->kapasitas_tersedia;
         $persenTerpakai = $slot->kapasitas > 0
             ? round(($terpakai / $slot->kapasitas) * 100, 1)
             : 0;
 
-        return view('admin.slot.show', compact('lumbung', 'slot', 'stokList', 'terpakai', 'persenTerpakai'));
+        return view('admin.slot.show', compact('lumbung', 'slot', 'gabahTersimpan', 'riwayatPenyimpanan', 'terpakai', 'persenTerpakai'));
     }
 
     /**
@@ -129,7 +161,10 @@ class SlotLumbungController extends Controller
         $lumbung = Lumbung::findOrFail($idLumbung);
         $slot    = SlotLumbung::where('id_lumbung', $idLumbung)->findOrFail($idSlot);
 
-        return view('admin.slot.edit', compact('lumbung', 'slot'));
+        // Hitung berapa banyak yang sudah terpakai
+        $terpakaiKg = $slot->kapasitas - $slot->kapasitas_tersedia;
+
+        return view('admin.slot.edit', compact('lumbung', 'slot', 'terpakaiKg'));
     }
 
     /**

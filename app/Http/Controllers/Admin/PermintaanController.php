@@ -30,8 +30,8 @@ class PermintaanController extends Controller
         ]);
 
         // Filter berdasarkan status
-        $statusFilter = $request->get('status', 'pending');
-        if ($statusFilter !== 'semua') {
+        $statusFilter = $request->get('status');
+        if ($statusFilter && $statusFilter !== 'semua') {
             $query->where('status', $statusFilter);
         }
 
@@ -62,7 +62,11 @@ class PermintaanController extends Controller
         // Jumlah per status untuk badge navigasi
         $jumlahPerStatus = PermintaanPengambilan::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
-            ->pluck('total', 'status');
+            ->pluck('total', 'status')
+            ->toArray();
+        
+        // Tambahkan total keseluruhan
+        $jumlahPerStatus['total'] = PermintaanPengambilan::count();
 
         $petaniList   = Petani::orderBy('nama_petani')->get();
         $kelompokList = KelompokTani::orderBy('nama_kelompok')->get();

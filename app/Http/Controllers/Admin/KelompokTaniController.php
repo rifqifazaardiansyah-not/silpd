@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KelompokTani;
+use App\Models\PenyimpananGabah;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KelompokTaniController extends Controller
 {
@@ -30,6 +32,28 @@ class KelompokTaniController extends Controller
     public function create()
     {
         return view('admin.kelompok.create');
+    }
+
+    /**
+     * Lihat detail kelompok tani dan daftar anggota petani.
+     */
+    public function show(int $id)
+    {
+        $kelompok = KelompokTani::withCount('petani')->findOrFail($id);
+        
+        // Paginate anggota petani
+        $anggota = $kelompok->petani()->paginate(10);
+        
+        // Calculate total stok gabah for the group
+        // Join: penyimpanan_gabah -> detail_panen -> panen -> petani -> kelompok_tani
+        $totalStokKelompok = PenyimpananGabah::join('detail_panen', 'penyimpanan_gabah.id_detail', '=', 'detail_panen.id_detail')
+            ->join('panen', 'detail_panen.id_panen', '=', 'panen.id_panen')
+            ->join('petani', 'panen.id_petani', '=', 'petani.id_petani')
+            ->where('petani.id_kelompok', $id)
+            ->where('penyimpanan_gabah.status', 'tersimpan')
+            ->sum(DB::raw('penyimpanan_gabah.jumlah'));
+
+        return view('admin.kelompok.show', compact('kelompok', 'anggota', 'totalStokKelompok'));
     }
 
     /**

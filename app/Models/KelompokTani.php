@@ -9,6 +9,8 @@ class KelompokTani extends Model
 {
     protected $table = 'kelompok_tani';
     protected $primaryKey = 'id_kelompok';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [

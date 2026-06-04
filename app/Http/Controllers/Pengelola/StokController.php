@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pengelola;
 
 use App\Http\Controllers\Controller;
+use App\Models\JenisGabah;
 use App\Models\Lumbung;
 use App\Models\PenyimpananGabah;
 use App\Models\SlotLumbung;
@@ -23,8 +24,10 @@ class StokController extends Controller
     {
         $idPengelola = session('ref_id');
 
-        // Lumbung yang dikelola pengelola ini
-        $lumbungList = Lumbung::where('id_pengelola', $idPengelola)
+        // Lumbung yang dikelola pengelola ini (many-to-many)
+        $lumbungList = Lumbung::whereHas('pengelola', function($q) use ($idPengelola) {
+                $q->where('pengelola.id_pengelola', $idPengelola);
+            })
             ->with([
                 'slotLumbung' => function ($q) {
                     $q->orderBy('kode_slot');
@@ -89,11 +92,15 @@ class StokController extends Controller
             ->where('tanggal_masuk', '<=', $batasDate)
             ->count();
 
+        // Ambil semua jenis gabah untuk filter dropdown
+        $jenisGabahList = JenisGabah::orderBy('nama_jenis')->get();
+
         return view('pengelola.stok.index', compact(
             'lumbungList',
             'stokList',
             'ringkasanKapasitas',
             'jumlahKadaluarsa',
+            'jenisGabahList',
         ));
     }
 
@@ -104,7 +111,9 @@ class StokController extends Controller
     public function showSlot(int $idSlot)
     {
         $idPengelola   = session('ref_id');
-        $idLumbungList = Lumbung::where('id_pengelola', $idPengelola)->pluck('id_lumbung');
+        $idLumbungList = Lumbung::whereHas('pengelola', function($q) use ($idPengelola) {
+            $q->where('pengelola.id_pengelola', $idPengelola);
+        })->pluck('id_lumbung');
 
         $slot = SlotLumbung::whereIn('id_lumbung', $idLumbungList)
             ->with('lumbung')

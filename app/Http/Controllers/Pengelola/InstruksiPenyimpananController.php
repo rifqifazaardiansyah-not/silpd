@@ -30,11 +30,12 @@ class InstruksiPenyimpananController extends Controller
             ]);
 
         // Filter status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        $statusFilter = $request->get('status', 'pending'); // Default: pending
+        
+        if ($statusFilter === 'semua') {
+            // Tampilkan semua, tidak perlu where
         } else {
-            // Default tampilkan pending dulu
-            $query->orderByRaw("FIELD(status, 'pending', 'selesai')");
+            $query->where('status', $statusFilter);
         }
 
         $instruksiList = $query->orderBy('tanggal_instruksi')->paginate(15);
@@ -42,8 +43,14 @@ class InstruksiPenyimpananController extends Controller
         $jumlahPending = InstruksiPenyimpanan::whereIn('id_slot', $slotIds)
             ->where('status', 'pending')
             ->count();
+            
+        $jumlahSelesai = InstruksiPenyimpanan::whereIn('id_slot', $slotIds)
+            ->where('status', 'selesai')
+            ->count();
+            
+        $jumlahTotal = InstruksiPenyimpanan::whereIn('id_slot', $slotIds)->count();
 
-        return view('pengelola.instruksi.index', compact('instruksiList', 'jumlahPending'));
+        return view('pengelola.instruksi.index', compact('instruksiList', 'jumlahPending', 'jumlahSelesai', 'jumlahTotal', 'statusFilter'));
     }
 
     /**
@@ -102,11 +109,13 @@ class InstruksiPenyimpananController extends Controller
         }
 
         DB::transaction(function () use ($instruksi, $request, $slot) {
-            // 1. Buat record penyimpanan gabah
+            // 1. Buat record penyimpanan gabah dengan tracking historical
             PenyimpananGabah::create([
                 'id_detail'     => $instruksi->id_detail,
+                'id_instruksi'  => $instruksi->id_instruksi, // Link ke instruksi
                 'id_slot'       => $instruksi->id_slot,
-                'jumlah'        => $instruksi->jumlah,
+                'jumlah_masuk'  => $instruksi->jumlah, // Jumlah original (historical)
+                'jumlah'        => $instruksi->jumlah, // Jumlah current (akan berkurang saat pengambilan)
                 'tanggal_masuk' => $request->tanggal_masuk,
                 'status'        => 'tersimpan',
             ]);
@@ -132,7 +141,9 @@ class InstruksiPenyimpananController extends Controller
      */
     private function getSlotIdsPengelola(int $idPengelola): \Illuminate\Support\Collection
     {
-        $idLumbungList = Lumbung::where('id_pengelola', $idPengelola)->pluck('id_lumbung');
+        $idLumbungList = Lumbung::whereHas('pengelola', function($q) use ($idPengelola) {
+            $q->where('pengelola.id_pengelola', $idPengelola);
+        })->pluck('id_lumbung');
 
         return SlotLumbung::whereIn('id_lumbung', $idLumbungList)->pluck('id_slot');
     }

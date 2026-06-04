@@ -1,167 +1,138 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Detail Panen')
+
+@section('breadcrumb')
+<nav class="flex items-center gap-2 text-sm text-gray-500">
+    <a href="{{ route('admin.dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <span>/</span>
+    <a href="{{ route('admin.panen.index') }}" class="hover:text-gray-700">Input Panen</a>
+    <span>/</span>
+    <span class="text-gray-900 font-medium">Detail</span>
+</nav>
+@endsection
 
 @section('content')
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2>Detail Panen</h2>
-            <p class="text-muted">ID: {{ $panen->id_panen }} | Tanggal: {{ $panen->tanggal_panen->format('d M Y') }}</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('admin.panen.index') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-            @if (!$ringkasanDetail->some(fn($r) => $r['penyimpanan']) && !$ringkasanDetail->some(fn($r) => $r['instruksi']?->status === 'selesai'))
-            <a href="{{ route('admin.panen.edit', $panen->id_panen) }}" class="btn btn-warning">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
-            <form action="{{ route('admin.panen.destroy', $panen->id_panen) }}" method="POST" style="display: inline;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Hapus data panen ini?')">
-                    <i class="bi bi-trash"></i> Hapus
-                </button>
-            </form>
-            @endif
-        </div>
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Panen #{{ $panen->id_panen }}</h1>
+        <p class="text-sm text-gray-500 mt-1">{{ \Carbon\Carbon::parse($panen->tanggal_panen)->format('d M Y') }} • {{ $panen->petani->nama_petani }}</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{{ route('admin.panen.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Kembali
+        </a>
+        <form action="{{ route('admin.panen.destroy', $panen->id_panen) }}" method="POST" class="inline">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors" onclick="return confirm('Yakin ingin menghapus panen ini?')">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L19.18 2.318a2.25 2.25 0 00-2.163-1.318H5.183a2.25 2.25 0 00-2.163 1.318L2.012 6.54m15.11 0v3.375c0 .621-.504 1.125-1.125 1.125H3.375c-.621 0-1.125-.504-1.125-1.125V6.54" />
+                </svg>
+                Hapus
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Panen</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalPanen) }} kg</p>
     </div>
 
-    @if ($errors->has('edit') || $errors->has('hapus'))
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        @if ($errors->has('edit'))
-            {{ $errors->first('edit') }}
-        @elseif ($errors->has('hapus'))
-            {{ $errors->first('hapus') }}
-        @endif
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-
-    @if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-
-    @if (session('warning_list'))
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <strong>Peringatan:</strong>
-        <ul class="mb-0">
-            @foreach (session('warning_list') as $warning)
-                <li>{{ $warning }}</li>
-            @endforeach
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-
-    <!-- Header Panen -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Informasi Panen</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <strong>Petani:</strong><br>
-                    {{ $panen->petani->nama_petani }}<br>
-                    <small class="text-muted">{{ $panen->petani->kelompokTani->nama_kelompok ?? '-' }}</small>
-                </div>
-                <div class="col-md-4">
-                    <strong>Tanggal Panen:</strong><br>
-                    {{ $panen->tanggal_panen->format('d M Y') }}
-                </div>
-                <div class="col-md-4">
-                    <strong>Total Panen:</strong><br>
-                    {{ number_format($totalPanen, 2) }} kg
-                    <br>
-                    <strong style="color: #28a745;">Untuk Lumbung ({{ $persenLumbung }}%):</strong>
-                    {{ number_format($totalLumbung, 2) }} kg
-                </div>
-            </div>
-        </div>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Untuk Lumbung</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalLumbung) }} kg</p>
+        <p class="mt-1 text-xs text-gray-500">{{ $persenLumbung }}% dari total</p>
     </div>
 
-    <!-- Detail Per Jenis Gabah -->
-    <div class="card">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">Detail Panen per Jenis Gabah</h5>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Jenis Gabah</th>
-                        <th>Jumlah Panen (kg)</th>
-                        <th>Untuk Lumbung (kg)</th>
-                        <th>Status Instruksi</th>
-                        <th>Slot Penyimpanan</th>
-                        <th>Status Penyimpanan</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($ringkasanDetail as $ring)
-                    <tr>
-                        <td>
-                            <strong>{{ $ring['detail']->jenisGabah->nama_jenis }}</strong>
-                        </td>
-                        <td>{{ number_format($ring['detail']->jumlah_panen, 2) }}</td>
-                        <td>{{ number_format($ring['jumlah_lumbung'], 2) }}</td>
-                        <td>
-                            @if ($ring['instruksi'])
-                                @if ($ring['instruksi']->status === 'pending')
-                                    <span class="badge bg-warning">Pending</span>
-                                @elseif ($ring['instruksi']->status === 'selesai')
-                                    <span class="badge bg-success">Selesai</span>
-                                @endif
-                            @else
-                                <span class="badge bg-secondary">Belum ada</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($ring['instruksi'])
-                                {{ $ring['instruksi']->slotLumbung->kode_slot ?? '-' }}<br>
-                                <small class="text-muted">({{ $ring['instruksi']->slotLumbung->lumbung->nama_lumbung ?? '-' }})</small>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($ring['penyimpanan'])
-                                <span class="badge bg-info">{{ ucfirst($ring['penyimpanan']->status) }}</span>
-                            @else
-                                <span class="badge bg-light text-dark">Belum</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($ring['ada_instruksi'] && !$ring['sudah_disimpan'])
-                                <form action="{{ route('admin.panen.batal-instruksi', $ring['instruksi']->id_instruksi) }}" method="POST" style="display: inline;">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Petani</p>
+        <p class="mt-3 text-lg font-semibold text-gray-900">{{ $panen->petani->nama_petani }}</p>
+        <p class="mt-1 text-xs text-gray-500">{{ $panen->petani->kelompokTani->nama_kelompok ?? '-' }}</p>
+    </div>
+</div>
+
+<!-- Detail Table -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-sm font-semibold text-gray-900 tracking-tight">Detail Panen per Jenis Gabah</h3>
+    </div>
+
+    <table class="w-full">
+        <thead>
+            <tr class="border-b border-gray-200 bg-gray-50">
+                <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Jenis Gabah</th>
+                <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-500">Jumlah Panen</th>
+                <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-gray-500">Jumlah Lumbung</th>
+                <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Status Instruksi</th>
+                <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">Slot Tujuan</th>
+                <th class="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-gray-500">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            @forelse($ringkasanDetail as $detail)
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ $detail->jenisGabah->nama_jenis }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($detail->jumlah_panen) }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($detail->jumlah_lumbung) }} kg</td>
+                    <td class="px-4 py-3 text-sm">
+                        @php
+                            $instruksi = $detail->instruksiPenyimpanan->first();
+                            $status = $instruksi?->status ?? 'belum_dibuat';
+                        @endphp
+
+                        @if($status === 'belum_dibuat')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-700">Belum Dibuat</span>
+                        @elseif($status === 'pending')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700">Pending</span>
+                        @elseif($status === 'selesai')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">Selesai</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        @if($instruksi)
+                            {{ $instruksi->slotLumbung->lumbung->nama_lumbung }} / {{ $instruksi->slotLumbung->kode_slot }}
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <div class="flex items-center justify-center gap-2">
+                            @if($status === 'belum_dibuat')
+                                <a href="{{ route('admin.panen.instruksi-manual', $detail->id_detail) }}" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Buat Instruksi">
+                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                </a>
+                            @elseif($status === 'pending')
+                                <form action="{{ route('admin.panen.instruksi.batal', $instruksi->id_instruksi) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Batalkan instruksi ini?')">
-                                        Batalkan
+                                    @method('DELETE')
+                                    <button type="submit" class="p-1.5 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Batal Instruksi" onclick="return confirm('Yakin ingin membatalkan instruksi ini?')">
+                                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                     </button>
                                 </form>
-                            @elseif (!$ring['ada_instruksi'])
-                                <a href="{{ route('admin.panen.form-instruksi', ['id' => $panen->id_panen, 'idDetail' => $ring['detail']->id_detail]) }}" class="btn btn-sm btn-outline-primary">
-                                    Buat Instruksi
-                                </a>
-                            @else
-                                <span class="text-muted">-</span>
                             @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
-                            Tidak ada detail panen
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
+                        Tidak ada detail panen
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
 @endsection

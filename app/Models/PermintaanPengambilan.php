@@ -10,6 +10,8 @@ class PermintaanPengambilan extends Model
 {
     protected $table = 'permintaan_pengambilan';
     protected $primaryKey = 'id_permintaan';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [
@@ -21,6 +23,10 @@ class PermintaanPengambilan extends Model
 
     protected $casts = [
         'tanggal_permintaan' => 'date',
+    ];
+
+    protected $appends = [
+        'jumlah_diminta',
     ];
 
     /**
@@ -51,5 +57,32 @@ class PermintaanPengambilan extends Model
     public function detailPengambilan(): HasMany
     {
         return $this->hasMany(DetailPengambilan::class, 'id_permintaan', 'id_permintaan');
+    }
+
+    /**
+     * Method: Mendapatkan jumlah diminta dari detail pengambilan
+     *
+     * @return float
+     */
+    public function getJumlahDiminta(): float
+    {
+        // Jika relasi sudah di-load, gunakan dari collection
+        if ($this->relationLoaded('detailPengambilan')) {
+            return $this->detailPengambilan->sum('jumlah');
+        }
+        
+        // Jika belum di-load, query langsung
+        return $this->detailPengambilan()->sum('jumlah');
+    }
+
+    /**
+     * Accessor: Mendapatkan jumlah diminta dari detail pengambilan
+     * Menggunakan appends untuk memastikan selalu tersedia
+     *
+     * @return float
+     */
+    public function getJumlahDimintaAttribute(): float
+    {
+        return $this->getJumlahDiminta();
     }
 }

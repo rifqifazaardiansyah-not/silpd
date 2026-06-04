@@ -127,8 +127,8 @@ class PengelolaController extends Controller
     {
         $pengelola = Pengelola::with(['login', 'lumbung.slotLumbung'])->findOrFail($id);
 
-        // Ringkasan per lumbung yang dikelola
-        $ringkasanLumbung = $pengelola->lumbung->map(function ($lumbung) {
+        // Attach capacity attributes to each lumbung
+        $pengelola->lumbung->each(function ($lumbung) {
             $totalKapasitas = $lumbung->slotLumbung->sum('kapasitas');
             $totalTersedia  = $lumbung->slotLumbung->sum('kapasitas_tersedia');
             $totalTerpakai  = $totalKapasitas - $totalTersedia;
@@ -136,16 +136,12 @@ class PengelolaController extends Controller
                 ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
                 : 0;
 
-            return [
-                'lumbung'         => $lumbung,
-                'jumlah_slot'     => $lumbung->slotLumbung->count(),
-                'total_kapasitas' => $totalKapasitas,
-                'total_terpakai'  => $totalTerpakai,
-                'persen_terpakai' => $persenTerpakai,
-            ];
+            $lumbung->total_kapasitas = $totalKapasitas;
+            $lumbung->total_terpakai = $totalTerpakai;
+            $lumbung->persen_terpakai = $persenTerpakai;
         });
 
-        return view('admin.pengelola.show', compact('pengelola', 'ringkasanLumbung'));
+        return view('admin.pengelola.show', compact('pengelola'));
     }
 
     /**

@@ -9,6 +9,8 @@ class DetailPengambilan extends Model
 {
     protected $table = 'detail_pengambilan';
     protected $primaryKey = 'id_detail_ambil';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [

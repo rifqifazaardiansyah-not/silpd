@@ -10,6 +10,8 @@ class Lumbung extends Model
 {
     protected $table = 'lumbung';
     protected $primaryKey = 'id_lumbung';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [

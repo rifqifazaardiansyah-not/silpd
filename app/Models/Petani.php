@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Petani extends Model
 {
     protected $table = 'petani';
     protected $primaryKey = 'id_petani';
+    public $incrementing = true;
+    public $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [
@@ -55,10 +58,10 @@ class Petani extends Model
     /**
      * Hubungan: Petani memiliki data login
      *
-     * @return HasMany
+     * @return HasOne
      */
-    public function login(): HasMany
+    public function login(): HasOne
     {
-        return $this->hasMany(Login::class, 'id_petani', 'id_petani');
+        return $this->hasOne(Login::class, 'id_petani', 'id_petani');
     }
 }
