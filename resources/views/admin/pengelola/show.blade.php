@@ -116,7 +116,7 @@
                         </span>
                     </td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $lumbung->slotLumbung->count() }} slot</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($lumbung->total_kapasitas, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($lumbung->total_kapasitas, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm">
                         <div class="w-24">
                             <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -125,7 +125,7 @@
                                     style="width: {{ $lumbung->persen_terpakai }}%"
                                 ></div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">{{ $lumbung->persen_terpakai }}%</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ number_format($lumbung->persen_terpakai, 2, ',', '.') }}%</p>
                         </div>
                     </td>
                 </tr>

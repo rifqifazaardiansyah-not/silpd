@@ -129,11 +129,11 @@ class PengelolaController extends Controller
 
         // Attach capacity attributes to each lumbung
         $pengelola->lumbung->each(function ($lumbung) {
-            $totalKapasitas = $lumbung->slotLumbung->sum('kapasitas');
-            $totalTersedia  = $lumbung->slotLumbung->sum('kapasitas_tersedia');
+            $totalKapasitas = (float) $lumbung->slotLumbung->sum('kapasitas');
+            $totalTersedia  = (float) $lumbung->slotLumbung->sum('kapasitas_tersedia');
             $totalTerpakai  = $totalKapasitas - $totalTersedia;
             $persenTerpakai = $totalKapasitas > 0
-                ? round(($totalTerpakai / $totalKapasitas) * 100, 1)
+                ? round(($totalTerpakai / $totalKapasitas) * 100, 2)
                 : 0;
 
             $lumbung->total_kapasitas = $totalKapasitas;
