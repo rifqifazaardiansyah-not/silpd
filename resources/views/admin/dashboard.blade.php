@@ -23,7 +23,7 @@
             <p class="text-xs font-semibold uppercase tracking-wider text-slate-600">Total Petani</p>
             <span class="p-2 rounded-lg" style="background-color: #0F172A15;">
                 <svg class="w-5 h-5" style="color: #0F172A" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 001.591-.68m0 0A9.333 9.333 0 0015 19.5m0 0a9.36 9.36 0 01-5.496-1.629A9.334 9.334 0 0015 19.128zm0 0a9.348 9.348 0 00-6-8.972m0 0A9.382 9.382 0 002.25 9m0 0a9.368 9.368 0 015.746 1.629m0 0a9.355 9.355 0 015.004 1.343m0 0A9.325 9.325 0 0015 21M6.75 9a6 6 0 1111.573 1.066A6.002 6.002 0 016.75 9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
             </span>
         </div>
@@ -37,7 +37,7 @@
             <p class="text-xs font-semibold uppercase tracking-wider text-slate-600">Total Stok Aktif</p>
             <span class="p-2 rounded-lg" style="background-color: #22C55E15;">
                 <svg class="w-5 h-5" style="color: #22C55E" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.5v2.25m3-7.5v2.25m3-7.5v2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
                 </svg>
             </span>
         </div>
@@ -65,7 +65,7 @@
             <p class="text-xs font-semibold uppercase tracking-wider text-slate-600">Total Lumbung</p>
             <span class="p-2 rounded-lg" style="background-color: #0EA5E915;">
                 <svg class="w-5 h-5" style="color: #0EA5E9" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21V5.25A2.25 2.25 0 0011.25 3h-8.5A2.25 2.25 0 000 5.25v15.75m13.5 0h6A2.25 2.25 0 0021.75 18.75V9M3 12.75h18M3 6.75h18" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                 </svg>
             </span>
         </div>
@@ -78,7 +78,7 @@
 @if($slotHampirPenuh->isNotEmpty())
 <div class="mb-6 p-4 rounded-lg border-l-4 flex items-start gap-3" style="background-color: #EAB30815; border-left-color: #EAB308; border: 1px solid #EAB30830; border-left-width: 4px;">
     <svg class="w-5 h-5 flex-shrink-0 mt-0.5" style="color: #CA8A04" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c.866-1.5 2.845-2.501 5.303-2.501s4.437 1.001 5.303 2.501M3.75 21h16.5A2.25 2.25 0 0021 18.75V9a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9v9.75A2.25 2.25 0 005.25 21z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303-3.376c.866 1.5.866 3.377 0 4.875l-7.553 13.075A2.25 2.25 0 0 1 11.817 21H4.5a2.25 2.25 0 0 1-1.933-3.376l7.553-13.075a2.25 2.25 0 0 1 3.866 0ZM12 15.75h.007v.008H12v-.008Z" />
     </svg>
     <div>
         <p class="text-sm font-semibold" style="color: #CA8A04">{{ number_format($slotHampirPenuh->count(), 2, ',', '.') }} Slot Hampir Penuh</p>
@@ -90,7 +90,7 @@
 @if($gabahKadaluarsa->isNotEmpty())
 <div class="mb-6 p-4 rounded-lg border-l-4 flex items-start gap-3" style="background-color: #EF444415; border-left-color: #EF4444; border: 1px solid #EF444430; border-left-width: 4px;">
     <svg class="w-5 h-5 flex-shrink-0 mt-0.5" style="color: #DC2626" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303-3.376c-.866-1.5-2.845-2.501-5.303-2.501S13.437 7.5 12.697 9m0 0V21m0-13.5a6 6 0 00-5.303 2.501M3.75 21H21A2.25 2.25 0 0023.25 18.75V9a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 9v9.75A2.25 2.25 0 003.75 21z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5-.866 3.377 0 4.875l7.553 13.075a2.25 2.25 0 0 0 3.866 0l7.553-13.075c.866-1.498.866-3.375 0-4.875l-7.553-4.5a2.25 2.25 0 0 0-3.866 0l-7.553 4.5ZM12 15.75h.007v.008H12v-.008Z" />
     </svg>
     <div>
         <p class="text-sm font-semibold" style="color: #DC2626">{{ number_format($gabahKadaluarsa->count(), 2, ',', '.') }} Lot Gabah Melewati Batas Simpan</p>
