@@ -76,8 +76,8 @@ class LaporanController extends Controller
         // Rekapitulasi total stok per lumbung
         $rekapPerLumbung = Lumbung::with('slotLumbung')->get()->map(function ($lumbung) {
             $slotIds        = $lumbung->slotLumbung->pluck('id_slot');
-            $totalKapasitas = $lumbung->slotLumbung->sum('kapasitas');
-            $totalTersedia  = $lumbung->slotLumbung->sum('kapasitas_tersedia');
+            $totalKapasitas = (float) $lumbung->slotLumbung->sum('kapasitas');
+            $totalTersedia  = (float) $lumbung->slotLumbung->sum('kapasitas_tersedia');
             $totalTerpakai  = $totalKapasitas - $totalTersedia;
 
             return (object) [
@@ -86,7 +86,7 @@ class LaporanController extends Controller
                 'kapasitas_total'   => $totalKapasitas,
                 'kapasitas_tersedia'=> $totalTersedia,
                 'persen_terpakai'   => $totalKapasitas > 0
-                    ? round(($totalTerpakai / $totalKapasitas) * 100, 1) : 0,
+                    ? round(($totalTerpakai / $totalKapasitas) * 100, 2) : 0,
                 'jumlah_lot'        => PenyimpananGabah::whereIn('id_slot', $slotIds)
                     ->where('status', 'tersimpan')->count(),
             ];
@@ -99,12 +99,12 @@ class LaporanController extends Controller
             ->groupBy(fn ($item) => $item->detailPanen->jenisGabah->nama_jenis)
             ->map(fn ($group, $namaJenis) => (object) [
                 'nama_jenis' => $namaJenis,
-                'total_stok' => $group->sum('jumlah'),
+                'total_stok' => (float) $group->sum('jumlah'),
                 'jumlah_lot' => $group->count(),
             ])
             ->sortByDesc('total_stok');
 
-        $totalStokKeseluruhan = PenyimpananGabah::where('status', 'tersimpan')->sum('jumlah');
+        $totalStokKeseluruhan = (float) PenyimpananGabah::where('status', 'tersimpan')->sum('jumlah');
         $jumlahKadaluarsa     = PenyimpananGabah::where('status', 'tersimpan')
             ->where('tanggal_masuk', '<=', $batasDate)->count();
 
@@ -449,7 +449,7 @@ class LaporanController extends Controller
                     $item->slotLumbung->kode_slot,
                     $item->detailPanen->panen->petani->nama_petani,
                     $item->detailPanen->jenisGabah->nama_jenis,
-                    $item->jumlah,
+                    number_format($item->jumlah, 2, ',', '.'),
                     $item->tanggal_masuk,
                     $umurHari,
                     $kadaluarsa,

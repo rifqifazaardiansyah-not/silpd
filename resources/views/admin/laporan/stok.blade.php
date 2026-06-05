@@ -29,7 +29,7 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Stok</p>
-        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalStokKeseluruhan) }} kg</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($totalStokKeseluruhan, 2, ',', '.') }} kg</p>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
@@ -127,7 +127,7 @@
             @forelse($rekapPerLumbung as $lumbung)
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $lumbung->nama_lumbung }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($lumbung->total_stok) }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($lumbung->total_stok, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm">
                         @php
                             $persenTerpakai = ($lumbung->total_stok / $lumbung->kapasitas_total) * 100;
@@ -137,7 +137,7 @@
                             <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                                 <div class="h-full {{ $barColor }} rounded-full" style="width: {{ $persenTerpakai }}%"></div>
                             </div>
-                            <span class="text-xs text-gray-500 w-12 text-right">{{ number_format($persenTerpakai, 1) }}%</span>
+                            <span class="text-xs text-gray-500 w-12 text-right">{{ number_format($persenTerpakai, 2, ',', '.') }}%</span>
                         </div>
                     </td>
                 </tr>
@@ -170,7 +170,7 @@
             @forelse($rekapPerJenis as $jenis)
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $jenis->nama_jenis }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($jenis->total_stok) }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($jenis->total_stok, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ $jenis->jumlah_lot }}</td>
                 </tr>
             @empty
@@ -207,7 +207,7 @@
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $stok->slotLumbung->lumbung->nama_lumbung }} / {{ $stok->slotLumbung->kode_slot }}</td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $stok->detailPanen->panen->petani->nama_petani }}</td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $stok->detailPanen->jenisGabah->nama_jenis }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($stok->jumlah) }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ number_format($stok->jumlah, 2, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ \Carbon\Carbon::parse($stok->tanggal_masuk)->format('d M Y') }}</td>
                     <td class="px-4 py-3 text-sm">
                         @if($stok->is_kadaluarsa)

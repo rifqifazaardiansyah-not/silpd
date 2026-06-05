@@ -138,7 +138,7 @@
 
             <!-- Brand -->
             <div class="brand-area flex items-center gap-3 px-5 py-5 flex-shrink-0" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-                <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background: linear-gradient(135deg, #4f46e5, #6366f1);">
+                <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background: linear-gradient(135deg, #4e46e53f, #6365f164);">
                     🌾
                 </div>
                 <div class="brand-text min-w-0">
