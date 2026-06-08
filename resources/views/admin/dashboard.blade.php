@@ -182,30 +182,6 @@
     </div>
 </div>
 
-<!-- Ringkasan Kapasitas Lumbung -->
-<div class="bg-white rounded-lg border border-slate-200 overflow-hidden mb-8">
-    <div class="px-6 py-4 border-b border-slate-200">
-        <h3 class="text-sm font-semibold text-slate-900 tracking-tight">Ringkasan Kapasitas Lumbung</h3>
-    </div>
-    <div class="p-6 space-y-6">
-        @forelse($ringkasanLumbung as $item)
-        <div>
-            <div class="flex justify-between items-center mb-2">
-                <p class="text-sm font-medium text-slate-900">{{ $item->nama_lumbung }}</p>
-                <span class="text-xs text-slate-600">{{ number_format($item->persenTerpakai, 2, ',', '.') }}%</span>
-            </div>
-            <div class="h-2 rounded-full overflow-hidden" style="background-color: #E2E8F0;">
-                <div
-                    class="h-full rounded-full transition-all"
-                    style="background-color: {{ $item->persenTerpakai >= 80 ? '#EF4444' : ($item->persenTerpakai >= 60 ? '#EAB308' : '#22C55E') }}; width: {{ $item->persenTerpakai }}%"
-                ></div>
-            </div>
-        </div>
-        @empty
-        <p class="text-sm text-slate-600">Tidak ada data lumbung</p>
-        @endforelse
-    </div>
-</div>
 
 <!-- Stok Per Jenis -->
 <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
@@ -238,4 +214,140 @@
     </div>
 </div>
 
+<!-- Insight charts moved to the bottom -->
+<div class="bg-white rounded-lg border border-slate-200 overflow-hidden mt-8 mb-8">
+    <div class="px-6 py-4 border-b border-slate-200">
+        <h3 class="text-sm font-semibold text-slate-900 tracking-tight">Ringkasan Kapasitas Lumbung</h3>
+    </div>
+    <div class="p-6 space-y-6">
+        @forelse($ringkasanLumbung as $item)
+        <div>
+            <div class="flex justify-between items-center mb-2">
+                <p class="text-sm font-medium text-slate-900">{{ $item->nama_lumbung }}</p>
+                <span class="text-xs text-slate-600">{{ number_format($item->persenTerpakai, 2, ',', '.') }}%</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden" style="background-color: #E2E8F0;">
+                <div
+                    class="h-full rounded-full transition-all"
+                    style="background-color: {{ $item->persenTerpakai >= 80 ? '#EF4444' : ($item->persenTerpakai >= 60 ? '#EAB308' : '#22C55E') }}; width: {{ $item->persenTerpakai }}%"
+                ></div>
+            </div>
+        </div>
+        @empty
+        <p class="text-sm text-slate-600">Tidak ada data lumbung</p>
+        @endforelse
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
+    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-900 tracking-tight">Tren Panen 6 Bulan Terakhir</h3>
+                    <p class="text-xs text-slate-500 mt-1">Perkembangan jumlah panen selama 6 bulan terakhir</p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                    Rata-rata {{ number_format($grafikPanen->avg('total_panen'), 1, ',', '.') }} panen/bulan
+                </span>
+            </div>
+        </div>
+        <div class="p-6">
+            <canvas id="chartPanenTrend" height="180"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-900 tracking-tight">Kapasitas Lumbung vs Stok Aktif</h3>
+                    <p class="text-xs text-slate-500 mt-1">Komparasi kapasitas total dengan stok yang sedang tersimpan</p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">
+                    Terpakai {{ number_format($persenTerpakai, 2, ',', '.') }}%
+                </span>
+            </div>
+        </div>
+        <div class="p-6">
+            <canvas id="chartKapasitas" height="180"></canvas>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const panenLabels = @json($grafikPanen->pluck('bulan'));
+        const panenData = @json($grafikPanen->pluck('total_panen'));
+
+        new Chart(document.getElementById('chartPanenTrend'), {
+            type: 'line',
+            data: {
+                labels: panenLabels,
+                datasets: [{
+                    label: 'Jumlah Panen',
+                    data: panenData,
+                    borderColor: '#0F766E',
+                    backgroundColor: 'rgba(15, 118, 110, 0.12)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointHoverRadius: 5,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#475569' },
+                        grid: { color: 'rgba(148, 163, 184, 0.18)' }
+                    },
+                    x: {
+                        ticks: { color: '#475569' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('chartKapasitas'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Kapasitas Total', 'Stok Aktif'],
+                datasets: [{
+                    data: [{{ (float) $totalKapasitas }}, {{ (float) $totalStokAktif }}],
+                    backgroundColor: ['#0EA5E9', '#10B981'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#475569', usePointStyle: true }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ': ' + new Intl.NumberFormat('id-ID').format(context.raw);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 @endsection
