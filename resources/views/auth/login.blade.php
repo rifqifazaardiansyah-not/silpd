@@ -13,12 +13,10 @@
             font-family: 'Plus Jakarta Sans', 'Poppins', system-ui, -apple-system, sans-serif;
         }
 
-        /* Gradient background untuk bagian kiri */
         .gradient-left {
             background: linear-gradient(135deg, #1E3A8A 0%, #14B8A6 100%);
         }
 
-        /* Tombol dengan gradient */
         .btn-gradient {
             background: linear-gradient(135deg, #1E3A8A 0%, #14B8A6 100%);
             transition: all 0.3s ease;
@@ -33,8 +31,8 @@
             transform: translateY(0);
         }
 
-        /* Input styling */
         .input-field {
+            height: 45px;
             border: 1.5px solid #E5E7EB;
             transition: all 0.3s ease;
             background-color: #F8FAFC;
@@ -51,12 +49,10 @@
             color: #9CA3AF;
         }
 
-        /* Shadow lembut */
         .soft-shadow {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        /* Responsive: Sembunyikan bagian kiri pada mobile */
         @media (max-width: 768px) {
             .left-section {
                 display: none;
@@ -67,7 +63,6 @@
             }
         }
 
-        /* Animasi smooth */
         @keyframes slideInRight {
             from {
                 opacity: 0;
@@ -85,46 +80,41 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <div class="min-h-screen flex">
-        <!-- Bagian Kiri: Branding -->
-        <div class="left-section hidden md:flex w-full md:w-[45%] gradient-left flex-col items-center justify-center px-8 py-12">
+    <div class="min-h-screen flex p-4 gap-4">
+        <div class="left-section hidden md:flex w-full md:w-1/2 gradient-left flex-col items-center justify-center px-8 py-12 rounded-3xl soft-shadow">
             <div class="text-center text-white max-w-md">
-                <!-- Logo -->
                 <div class="mb-8 flex justify-center">
-                    <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center soft-shadow">
-                        <span class="text-4xl">🌾</span>
+                    <div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center soft-shadow">
+                        <svg class="w-12 h-12 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21V7m0 14c-3.5-2.2-5.6-5.2-6.2-9.1 3.9.6 6.9 2.7 9.1 6.2M12 21c3.5-2.2 5.6-5.2 6.2-9.1-3.9.6-6.9 2.7-9.1 6.2M12 7c-1.4-1.4-2.1-3-2.1-4.8 1.9 0 3.5.7 4.8 2.1C14.7 5.6 14 6.6 12 7Z" />
+                        </svg>
                     </div>
                 </div>
 
-                <!-- Judul SILPD -->
-                <h1 class="text-5xl font-bold tracking-wider mb-6" style="letter-spacing: 0.15em;">
+                <h1 class="text-5xl font-bold tracking-widest mb-6" style="letter-spacing: 0.2em;">
                     SILPD
                 </h1>
 
-                <!-- Tagline -->
                 <p class="text-lg font-light leading-relaxed opacity-95">
                     Sistem Informasi Lumbung Padi Desa untuk pengelolaan data pertanian secara lebih mudah dan terstruktur.
                 </p>
             </div>
         </div>
 
-        <!-- Bagian Kanan: Form Login -->
-        <div class="login-container w-full md:w-[55%] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 animate-slide-in">
+        <div class="login-container w-full md:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 animate-slide-in bg-white rounded-3xl soft-shadow">
             <div class="w-full max-w-md">
-                <!-- Header Form -->
                 <div class="mb-10">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-2">
                         Masuk Akun
                     </h2>
-                    <p class="text-gray-600">
+                    <p class="text-gray-600 text-base">
                         Silakan masuk untuk melanjutkan ke sistem
                     </p>
                 </div>
 
-                <!-- Error Messages -->
                 @if($errors->any())
-                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg animate-pulse">
-                    <ul class="space-y-1">
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <ul class="space-y-2">
                         @foreach($errors->all() as $error)
                         <li class="text-sm text-red-700 flex items-start gap-2">
                             <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -137,11 +127,9 @@
                 </div>
                 @endif
 
-                <!-- Form -->
                 <form action="{{ route('login') }}" method="POST" class="space-y-5">
                     @csrf
 
-                    <!-- Email -->
                     <div>
                         <label for="username" class="block text-sm font-semibold text-gray-900 mb-2">
                             Email
@@ -153,20 +141,14 @@
                             value="{{ old('username') }}"
                             placeholder="Masukkan email"
                             autocomplete="off"
-                            class="input-field w-full px-4 py-3 text-sm rounded-xl text-gray-900 transition-all"
+                            class="input-field w-full px-4 text-sm rounded-xl text-gray-900 transition-all"
                             required
                         >
                         @error('username')
-                        <p class="mt-2 text-xs text-red-600 flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18.101 12.93a1 1 0 00-1.414-1.414L10 14.586l-2.687-2.687a1 1 0 00-1.414 1.414l4.101 4.101a1 1 0 001.414 0l8.101-8.101z" clip-rule="evenodd" />
-                            </svg>
-                            {{ $message }}
-                        </p>
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Password -->
                     <div>
                         <label for="password" class="block text-sm font-semibold text-gray-900 mb-2">
                             Kata Sandi
@@ -177,7 +159,7 @@
                                 id="password"
                                 name="password"
                                 placeholder="Masukkan kata sandi"
-                                class="input-field w-full px-4 py-3 text-sm rounded-xl text-gray-900 pr-12 transition-all"
+                                class="input-field w-full px-4 text-sm rounded-xl text-gray-900 pr-12 transition-all"
                                 required
                             >
                             <button
@@ -193,25 +175,18 @@
                             </button>
                         </div>
                         @error('password')
-                        <p class="mt-2 text-xs text-red-600 flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18.101 12.93a1 1 0 00-1.414-1.414L10 14.586l-2.687-2.687a1 1 0 00-1.414 1.414l4.101 4.101a1 1 0 001.414 0l8.101-8.101z" clip-rule="evenodd" />
-                            </svg>
-                            {{ $message }}
-                        </p>
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Tombol Masuk -->
                     <button
                         type="submit"
-                        class="btn-gradient w-full px-4 py-3 text-white font-semibold rounded-xl soft-shadow mt-8 mb-4"
+                        class="btn-gradient w-full px-4 py-3 text-white font-bold rounded-xl soft-shadow mt-8 mb-4 text-base"
                     >
                         Masuk
                     </button>
                 </form>
 
-                <!-- Forgot Password Link (jika route tersedia) -->
                 @if(Route::has('password.request'))
                 <div class="text-center">
                     <a href="{{ route('password.request') }}" class="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors">
