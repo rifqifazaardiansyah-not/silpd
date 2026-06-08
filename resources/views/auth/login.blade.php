@@ -6,75 +6,150 @@
     <title>Login - SILPD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            font-feature-settings: "liga" 1, "cv02" 1, "cv03" 1, "cv04" 1;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        .gradient-brand {
+            background: linear-gradient(135deg, #1E3A8A 0%, #14B8A6 100%);
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #1E3A8A 0%, #14B8A6 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(30, 58, 138, 0.3);
+        }
+
+        .input-custom {
+            height: 45px;
+            border: 1.5px solid #E5E7EB;
+            background-color: #F8FAFC;
+            transition: all 0.3s ease;
+        }
+
+        .input-custom:focus {
+            border-color: #14B8A6;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+            background-color: #FFFFFF;
+        }
+
+        .input-custom::placeholder {
+            color: #9CA3AF;
+        }
+
+        .soft-shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .left-brand {
+                display: none;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.6s ease-out;
         }
     </style>
 </head>
 <body class="bg-gray-50">
-    <div class="min-h-screen flex items-center justify-center px-4">
-        <div class="w-full max-w-md">
-            <!-- Card -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-                <!-- Header -->
-                <div class="text-center mb-8">
-                    <div class="flex items-center justify-center gap-2 mb-2">
-                        <span class="text-4xl">🌾</span>
+    <div class="min-h-screen flex p-4 gap-4">
+        <!-- Left Section: Branding -->
+        <div class="left-brand hidden md:flex w-1/2 gradient-brand rounded-3xl soft-shadow flex-col items-center justify-center px-12 py-16">
+            <div class="text-center text-white max-w-md">
+                <!-- Logo -->
+                <div class="mb-10 flex justify-center">
+                    <div class="w-28 h-28 bg-white rounded-3xl flex items-center justify-center soft-shadow">
+                        <span class="text-6xl">🌾</span>
                     </div>
-                    <h1 class="text-2xl font-semibold tracking-tight text-gray-900">SILPD</h1>
-                    <p class="text-gray-500 text-sm mt-1">Sistem Informasi Lumbung Padi Desa</p>
+                </div>
+
+                <!-- Title -->
+                <h1 class="text-5xl font-bold mb-8" style="letter-spacing: 0.25em;">
+                    SILPD
+                </h1>
+
+                <!-- Tagline -->
+                <p class="text-base font-light leading-relaxed opacity-90">
+                    Sistem Informasi Lumbung Padi Desa untuk pengelolaan data pertanian secara lebih mudah dan terstruktur.
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Section: Form -->
+        <div class="w-full md:w-1/2 flex items-center justify-center py-12 px-4 animate-in">
+            <div class="w-full max-w-sm">
+                <!-- Form Header -->
+                <div class="mb-12">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-3">
+                        Masuk Akun
+                    </h2>
+                    <p class="text-gray-600 text-base">
+                        Silakan masuk untuk melanjutkan ke sistem
+                    </p>
                 </div>
 
                 <!-- Error Messages -->
                 @if($errors->any())
-                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div class="space-y-2">
                         @foreach($errors->all() as $error)
-                        <li class="text-sm text-red-700 flex items-start gap-2">
+                        <div class="text-sm text-red-700 flex gap-2">
                             <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                             </svg>
                             <span>{{ $error }}</span>
-                        </li>
+                        </div>
                         @endforeach
-                    </ul>
+                    </div>
                 </div>
                 @endif
 
-                <!-- Form -->
-                <form action="{{ route('login') }}" method="POST" class="space-y-5">
+                <!-- Login Form -->
+                <form action="{{ route('login') }}" method="POST" class="space-y-6">
                     @csrf
 
-                    <!-- Email -->
+                    <!-- Email Field -->
                     <div>
-                        <label for="username" class="block text-sm font-semibold text-gray-900 mb-2">
-                            Email
+                        <label for="username" class="block text-sm font-semibold text-gray-900 mb-2.5">
+                            Username
                         </label>
                         <input
                             type="text"
                             id="username"
                             name="username"
                             value="{{ old('username') }}"
-                            placeholder="Masukkan email"
+                            placeholder="Masukkan Username"
                             autocomplete="off"
-                            class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg
-                                   text-gray-900 placeholder-gray-400
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                                   transition-colors"
+                            class="input-custom w-full px-4 text-sm rounded-xl text-gray-900 outline-none"
                             required
                         >
                         @error('username')
-                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Password -->
+                    <!-- Password Field -->
                     <div>
-                        <label for="password" class="block text-sm font-semibold text-gray-900 mb-2">
+                        <label for="password" class="block text-sm font-semibold text-gray-900 mb-2.5">
                             Kata Sandi
                         </label>
                         <div class="relative">
@@ -82,11 +157,8 @@
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder="Masukkan password…"
-                                class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg
-                                       text-gray-900 placeholder-gray-400
-                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                                       transition-colors pr-10"
+                                placeholder="Masukkan kata sandi"
+                                class="input-custom w-full px-4 text-sm rounded-xl text-gray-900 pr-12 outline-none"
                                 required
                             >
                             <button
@@ -102,24 +174,22 @@
                             </button>
                         </div>
                         @error('password')
-                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Tombol Masuk -->
+                    <!-- Submit Button -->
                     <button
                         type="submit"
-                        class="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg
-                               hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                               disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        class="btn-gradient w-full px-4 py-3 text-white font-bold rounded-xl soft-shadow mt-10 text-base transition-all"
                     >
                         Masuk
                     </button>
                 </form>
 
-                <!-- Forgot Password Link (jika route tersedia) -->
+                <!-- Forgot Password Link -->
                 @if(Route::has('password.request'))
-                <div class="text-center">
+                <div class="text-center mt-6">
                     <a href="{{ route('password.request') }}" class="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors">
                         Lupa kata sandi?
                     </a>
