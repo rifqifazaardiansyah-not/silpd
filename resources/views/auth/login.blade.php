@@ -6,114 +6,141 @@
     <title>Login - SILPD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
-        .gradient-brand {
-            background: linear-gradient(135deg, #1E3A8A 0%, #14B8A6 100%);
+        body {
+            background-image: url('/images/rice-field.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
-        .btn-gradient {
-            background: linear-gradient(135deg, #1E3A8A 0%, #14B8A6 100%);
+        .gradient-overlay {
+            background: linear-gradient(135deg, rgba(15, 41, 38, 0.66) 0%, rgba(15, 41, 38, 0.66) 85%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .input-field {
             transition: all 0.3s ease;
         }
 
-        .btn-gradient:hover {
+        .input-field:focus {
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(30, 58, 138, 0.3);
         }
 
-        .input-custom {
-            height: 45px;
-            border: 1.5px solid #E5E7EB;
-            background-color: #F8FAFC;
-            transition: all 0.3s ease;
+        /* Animasi untuk sisi kiri (dari atas ke bawah) */
+        @keyframes slideDownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .input-custom:focus {
-            border-color: #14B8A6;
-            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
-            background-color: #FFFFFF;
+        /* Animasi untuk sisi kanan (dari bawah ke atas) */
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .input-custom::placeholder {
-            color: #9CA3AF;
+        /* Animasi untuk elemen individual */
+        .animate-slide-down {
+            animation: slideDownFade 0.8s ease-out forwards;
+            opacity: 0;
         }
 
-        .soft-shadow {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
+        .animate-slide-up {
+            animation: slideUpFade 0.8s ease-out forwards;
+            opacity: 0;
         }
+
+        /* Delay untuk setiap elemen */
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-600 { animation-delay: 0.6s; }
+        .delay-700 { animation-delay: 0.7s; }
 
         @media (max-width: 768px) {
             .left-brand {
                 display: none;
             }
         }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .animate-in {
-            animation: slideIn 0.6s ease-out;
-        }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen flex p-4 gap-4">
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="gradient-overlay absolute inset-0"></div>
+    
+    <div class="relative z-10 w-full max-w-6xl flex gap-4">
         <!-- Left Section: Branding -->
-        <div class="left-brand hidden md:flex w-1/2 gradient-brand rounded-3xl soft-shadow flex-col items-center justify-center px-12 py-16">
-            <div class="text-center text-white max-w-md">
+        <div class="left-brand hidden md:flex w-1/2 flex-col items-center justify-center px-12 py-16 text-white">
+            <div class="text-center max-w-md">
                 <!-- Logo -->
-                <div class="mb-10 flex justify-center">
-                    <div class="w-28 h-28 bg-white rounded-3xl flex items-center justify-center soft-shadow">
+                <div class="mb-8 flex justify-center animate-slide-down delay-100">
+                    <div class="w-24 h-24 bg-teal-600/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg">
                         <span class="text-6xl">🌾</span>
                     </div>
                 </div>
 
                 <!-- Title -->
-                <h1 class="text-5xl font-bold mb-8" style="letter-spacing: 0.25em;">
+                <h1 class="text-5xl font-bold mb-6 tracking-widest animate-slide-down delay-200">
                     SILPD
                 </h1>
 
                 <!-- Tagline -->
-                <p class="text-base font-light leading-relaxed opacity-90">
-                    Sistem Informasi Lumbung Padi Desa untuk pengelolaan data pertanian secara lebih mudah dan terstruktur.
+                <p class="text-lg leading-relaxed opacity-95 mb-8 animate-slide-down delay-300">
+                    Sistem Informasi Lumbung Padi Desa
+                </p>
+
+                <div class="w-20 h-1 bg-white/40 mx-auto mb-8 animate-slide-down delay-400"></div>
+
+                <p class="text-sm leading-relaxed opacity-80 animate-slide-down delay-500">
+                    Pengelolaan data pertanian secara modern, mudah, dan terstruktur untuk kemajuan desa
                 </p>
             </div>
         </div>
 
         <!-- Right Section: Form -->
-        <div class="w-full md:w-1/2 flex items-center justify-center py-12 px-4 animate-in">
-            <div class="w-full max-w-sm">
+        <div class="w-full md:w-1/2 flex items-center justify-center px-4">
+            <div class="glass-effect w-full max-w-md rounded-2xl shadow-2xl p-8 md:p-10">
                 <!-- Form Header -->
-                <div class="mb-12">
-                    <h2 class="text-4xl font-bold text-gray-900 mb-3">
+                <div class="mb-8 animate-slide-up delay-100">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">
                         Masuk Akun
                     </h2>
-                    <p class="text-gray-600 text-base">
+                    <p class="text-gray-600 text-sm">
                         Silakan masuk untuk melanjutkan ke sistem
                     </p>
                 </div>
 
                 <!-- Error Messages -->
                 @if($errors->any())
-                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <div class="space-y-2">
+                <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg animate-slide-up delay-200">
+                    <div class="space-y-1">
                         @foreach($errors->all() as $error)
-                        <div class="text-sm text-red-700 flex gap-2">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <div class="text-sm text-red-700 flex items-start gap-2">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                             </svg>
                             <span>{{ $error }}</span>
@@ -124,12 +151,12 @@
                 @endif
 
                 <!-- Login Form -->
-                <form action="{{ route('login') }}" method="POST" class="space-y-6">
+                <form action="{{ route('login') }}" method="POST" class="space-y-5">
                     @csrf
 
-                    <!-- Email Field -->
-                    <div>
-                        <label for="username" class="block text-sm font-semibold text-gray-900 mb-2.5">
+                    <!-- Username Field -->
+                    <div class="animate-slide-up delay-300">
+                        <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">
                             Username
                         </label>
                         <input
@@ -137,35 +164,32 @@
                             id="username"
                             name="username"
                             value="{{ old('username') }}"
-                            placeholder="Masukkan Username"
-                            autocomplete="off"
-                            class="input-custom w-full px-4 text-sm rounded-xl text-gray-900 outline-none"
+                            placeholder="Masukkan username"
+                            autocomplete="username"
+                            class="input-field w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                             required
                         >
-                        @error('username')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
                     </div>
 
                     <!-- Password Field -->
-                    <div>
-                        <label for="password" class="block text-sm font-semibold text-gray-900 mb-2.5">
-                            Kata Sandi
+                    <div class="animate-slide-up delay-400">
+                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Password
                         </label>
                         <div class="relative">
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder="Masukkan kata sandi"
-                                class="input-custom w-full px-4 text-sm rounded-xl text-gray-900 pr-12 outline-none"
+                                placeholder="Masukkan password"
+                                autocomplete="current-password"
+                                class="input-field w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl pr-12 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                                 required
                             >
                             <button
                                 type="button"
                                 onclick="togglePasswordVisibility()"
                                 class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                title="Tampilkan/sembunyikan password"
                             >
                                 <svg id="eyeIcon" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -173,28 +197,16 @@
                                 </svg>
                             </button>
                         </div>
-                        @error('password')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
                     </div>
 
                     <!-- Submit Button -->
                     <button
                         type="submit"
-                        class="btn-gradient w-full px-4 py-3 text-white font-bold rounded-xl soft-shadow mt-10 text-base transition-all"
+                        class="w-full px-4 py-3.5 bg-teal-700 hover:bg-teal-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg mt-6 animate-slide-up delay-500"
                     >
                         Masuk
                     </button>
                 </form>
-
-                <!-- Forgot Password Link -->
-                @if(Route::has('password.request'))
-                <div class="text-center mt-6">
-                    <a href="{{ route('password.request') }}" class="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors">
-                        Lupa kata sandi?
-                    </a>
-                </div>
-                @endif
             </div>
         </div>
     </div>
