@@ -60,17 +60,17 @@
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Panen</p>
-        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($petaniList->sum('total_panen_kg')) }} kg</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($petaniList->sum('total_panen_kg'), 2) }} kg</p>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Stok Aktif Sekarang</p>
-        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($petaniList->sum('stok_aktif_kg')) }} kg</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($petaniList->sum('stok_aktif_kg'), 2) }} kg</p>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Diambil</p>
-        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($petaniList->sum('total_diambil_kg')) }} kg</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{{ number_format($petaniList->sum('total_diambil_kg'), 2) }} kg</p>
     </div>
 </div>
 
