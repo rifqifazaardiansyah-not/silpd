@@ -43,12 +43,12 @@
 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
     <div class="flex justify-between items-center mb-3">
         <p class="text-sm font-medium text-gray-900">Kapasitas Slot</p>
-        <span class="text-sm font-semibold text-gray-900">{{ $slot->persen_terpakai }}%</span>
+        <span class="text-sm font-semibold text-gray-900">{{ $persenTerpakai }}%</span>
     </div>
     <div class="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
         <div
-            class="h-full rounded-full transition-all {{ $slot->persen_terpakai >= 80 ? 'bg-red-500' : ($slot->persen_terpakai >= 60 ? 'bg-amber-400' : 'bg-emerald-500') }}"
-            style="width: {{ $slot->persen_terpakai }}%"
+            class="h-full rounded-full transition-all {{ $persenTerpakai >= 80 ? 'bg-red-500' : ($persenTerpakai >= 60 ? 'bg-amber-400' : 'bg-emerald-500') }}"
+            style="width: {{ $persenTerpakai }}%"
         ></div>
     </div>
     <div class="grid grid-cols-3 gap-4 text-sm">
@@ -58,11 +58,11 @@
         </div>
         <div>
             <p class="text-gray-500">Tersedia</p>
-            <p class="text-lg font-semibold text-emerald-600">{{ number_format($slot->kapasitas - $slot->terpakai, 0, ',', '.') }} kg</p>
+            <p class="text-lg font-semibold text-emerald-600">{{ number_format($slot->kapasitas - $terpakai, 0, ',', '.') }} kg</p>
         </div>
         <div>
             <p class="text-gray-500">Terpakai</p>
-            <p class="text-lg font-semibold text-amber-600">{{ number_format($slot->terpakai, 0, ',', '.') }} kg</p>
+            <p class="text-lg font-semibold text-amber-600">{{ number_format($terpakai, 0, ',', '.') }} kg</p>
         </div>
     </div>
 </div>
@@ -89,7 +89,7 @@
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $item->petani->nama_petani ?? '-' }}</td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $item->jenisGabah->nama_jenis ?? '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($item->jumlah_gabah, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($item->jumlah, 0, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm text-gray-500">{{ $item->tanggal_masuk->format('d M Y') }}</td>
                     <td class="px-4 py-3 text-sm text-gray-500">{{ $item->umur_hari }} hari</td>
                     <td class="px-4 py-3 text-sm">
@@ -135,7 +135,7 @@
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $item->petani->nama_petani ?? '-' }}</td>
                     <td class="px-4 py-3 text-sm text-gray-900">{{ $item->jenisGabah->nama_jenis ?? '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($item->jumlah_gabah, 0, ',', '.') }} kg</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ number_format($item->jumlah, 0, ',', '.') }} kg</td>
                     <td class="px-4 py-3 text-sm text-gray-500">{{ $item->tanggal_masuk->format('d M Y') }}</td>
                     <td class="px-4 py-3 text-sm">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">

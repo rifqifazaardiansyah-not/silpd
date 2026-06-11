@@ -133,7 +133,7 @@
             </div>
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Jumlah Aktual</p>
-                <p class="text-sm text-gray-900">{{ number_format($penyimpanan->jumlah_aktual) }} kg</p>
+                <p class="text-sm text-gray-900">{{ number_format($penyimpanan->jumlah_masuk) }} kg</p>
             </div>
         </div>
         <div>

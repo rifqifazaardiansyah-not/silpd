@@ -49,16 +49,16 @@
         @csrf
         @method('PUT')
 
-        <!-- Role Info -->
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Role</p>
-            <p class="text-sm text-gray-900 mt-1">{{ ucfirst($akun->role) }}</p>
-        </div>
-
-        <!-- Pemilik Info -->
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Pemilik Akun</p>
-            <p class="text-sm text-gray-900 mt-1">{{ $akun->nama_pemilik ?? '-' }}</p>
+        <!-- Role & Pemilik Info (read-only, side by side) -->
+        <div class="bg-gray-50 rounded-lg p-4 grid grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Role</p>
+                <p class="text-sm text-gray-900 mt-1 font-medium">{{ ucfirst($akun->role) }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Pemilik Akun</p>
+                <p class="text-sm text-gray-900 mt-1">{{ $akun->nama_pemilik ?? '-' }}</p>
+            </div>
         </div>
 
         <!-- Username -->
@@ -82,8 +82,11 @@
         </div>
 
         <!-- Password Info -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p class="text-sm text-blue-800">Untuk mengubah password, gunakan fitur Reset Password di halaman detail akun.</p>
+        <div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+            </svg>
+            <p class="text-sm text-blue-800">Untuk mengubah password, gunakan fitur <strong>Reset Password</strong> di halaman detail akun.</p>
         </div>
 
         <!-- Buttons -->
