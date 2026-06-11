@@ -17,8 +17,8 @@ use App\Http\Controllers\Petani;
 |
 */
 
-// Auth routes (tanpa middleware)
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+// Auth routes
+Route::get('/login', [LoginController::class, 'showLoginForm'])->middleware('guest')->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -119,9 +119,12 @@ Route::middleware('role:petani')->prefix('petani')->name('petani.')->group(funct
     Route::post('permintaan/{id}/batal', [Petani\PermintaanController::class, 'batal'])->name('permintaan.batal');
 });
 
-// Root redirect
+// Root redirect - jika sudah login redirect ke dashboard, jika belum ke landing page
 Route::get('/', function () {
     if (!session('login_id')) {
+        // Jika tidak ada session, arahkan ke landing page (TanStack)
+        // Karena / di-proxy ke TanStack oleh Nginx, ini tidak akan tercapai saat domain silpd.test
+        // Tapi jika diakses via PHP server, redirect ke login
         return redirect()->route('login');
     }
 
