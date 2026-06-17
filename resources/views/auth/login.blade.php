@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Login - SILPD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -241,6 +244,22 @@
                 eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
             }
         }
+    </script>
+
+    <script>
+        // ===== HALAMAN LOGIN: TOMBOL BACK → KE LANDING PAGE =====
+        // Masalah: history browser masih menyimpan entri-entri palsu dari pushState dashboard.
+        // Solusi: saat di halaman login, tangkap event popstate (tombol back/forward) dan
+        //         langsung replace ke landing page — memotong semua entri palsu sekaligus.
+        (function () {
+            // Tandai entry login di history agar kita tahu posisi kita
+            history.replaceState({ page: 'login' }, '', window.location.href);
+
+            window.addEventListener('popstate', function (e) {
+                // User menekan tombol back/forward di halaman login → redirect ke landing page
+                window.location.replace('http://silpd.test/');
+            });
+        })();
     </script>
 </body>
 </html>
