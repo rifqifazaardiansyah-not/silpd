@@ -54,7 +54,13 @@ class PermintaanController extends Controller
         }
 
         $permintaanList = $query
-            ->orderByRaw("FIELD(status, 'pending', 'disetujui', 'selesai', 'ditolak')")
+            ->orderByRaw("CASE 
+                WHEN status = 'pending' THEN 1 
+                WHEN status = 'disetujui' THEN 2 
+                WHEN status = 'selesai' THEN 3 
+                WHEN status = 'ditolak' THEN 4 
+                ELSE 5 
+            END")
             ->orderBy('tanggal_permintaan')
             ->paginate(15)
             ->withQueryString();
