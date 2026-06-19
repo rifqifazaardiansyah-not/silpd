@@ -51,7 +51,11 @@ class InstruksiController extends Controller
         }
 
         $instruksiList = $query
-            ->orderByRaw("FIELD(status, 'pending', 'selesai')")
+            ->orderByRaw("CASE 
+                WHEN status = 'pending' THEN 1 
+                WHEN status = 'selesai' THEN 2 
+                ELSE 3 
+            END")
             ->orderBy('tanggal_instruksi')
             ->paginate(15)
             ->withQueryString();
